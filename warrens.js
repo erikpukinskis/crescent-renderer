@@ -64,6 +64,7 @@ library.using([
 				"width": "20px",
 				"height": "20px",
 				"position": "absolute",
+				"transform-origin": "20px top",
 			}),
 			element.style(".feather-top", {
 				"left": "27px",
@@ -84,73 +85,151 @@ library.using([
 
 		var crescent = element.template(
 			".crescent",
-			function(options) {
+			function(name, options) {
 
 				// "color": "pink"
 				// "belly": 180,
 				// "o'clock": 6,
 				// "depth": 4,
+				// "top": 1
 
+				var transform
 				var color = options.color || "red"
+				this.appendStyles({
+					"border-right": "10px solid "+color})				
 				var depth = options.depth || 1
 
-				var stretch = "scaleX("
-				this.appendStyles({
-					"border-right": "10px solid "+color,
-					"transform": "scale("+depth+")"})
-			})
+				if (options.top) {
+					transform = (transform||"")+" translateY("+options.top*20+"px)" 
+				}
+
+				if (options.depth) {
+					transform = (transform||"")+" scale("+options.depth+")" 
+				}
+
+				if (transform) {
+					this.appendStyles({
+						"transform": transform})
+				}
+
+				this.addSelector(
+					"."+name+"-crescent")})
+
+		var key = element.template(
+			"span.key",
+			function(name) {
+				var character = {
+					"left": "&#9664;",
+					"up": "&#9650;",
+					"down": "&#9660;",
+					"right": "&#9654;"}
+				this.addChild(
+					character[name] || name)})
 
 		var page = [
-			element("h1", "feathers!"),
+			element(
+				"h1",
+				"feathers!"),
 			element(
 				"p",
-				element("span.key", "&#9664;"),
-				"move neck feather left"),
+				key(
+					"up"),
+				"move belly up"),
 			element(
 				"p",
-				element("span.key", "&#9654;"),
-				"move neck feather right"),
+				key(
+					"down"),
+				"move belly down"),
 			element(
 				".feather.neck-feather",
-				element(".crescent.feather-top"),
-				element(".crescent.feather-bottom")),
-			crescent({
-				"color": "pink",
-				"belly": 180,
-				"o'clock": 6,
-				"depth": 4,
-			}),
+				element(
+					".crescent.feather-top"),
+				element(
+					".crescent.feather-bottom")),
+
+			element(
+				".bird",
+				element.style({
+					"position": "absolute",
+					"left": "200px",
+					"top": "100px",
+				}),
+				crescent(
+					"back",{
+					"color": "pink",
+					"belly": 180,
+					"o'clock": 6,
+					"depth": 4,
+				}),
+				crescent(
+					"belly",{
+					"color": "palevioletred",
+					"belly": 180,
+					"o'clock": 6,
+					"depth": 2,
+					"top": 1,
+				})),
 			element(
 				".feather.belly",
-				element(".crescent.belly"),
-				element(".crescent.feather-bottom")),
+				element(
+					".crescent.belly"),
+				element(
+					".crescent.feather-bottom")),
 			element(
 				".feather.wing-feather",
-				element(".crescent.feather-top"),
-				element(".crescent.feather-bottom")),
+				element(
+					".crescent.feather-top"),
+				element(
+					".crescent.feather-bottom")),
 			element(
 				".feather.back-wing-feather",
-				element(".crescent.feather-top"),
-				element(".crescent.feather-bottom")),
+				element(
+					".crescent.feather-top"),
+				element(
+					".crescent.feather-bottom")),
 			element(
 				".feather.tail-feather",
-				element(".crescent.feather-top"),
-				element(".crescent.feather-bottom")),
+				element(
+					".crescent.feather-top"),
+				element(
+					".crescent.feather-bottom")),
 		]
 
 
 		var press = bridge.defineSingleton(
+			"press",
 			function() {
 
-				function press(event) {
-					var d
-					if (event.key == "ArrowRight") {
-						d = 1
-					} else if (event.key == "ArrowLeft") {
-						d = -1
-					}
-					moveSelectedFeather(d)
+				var belly = {
+					"top": 1.0,
 				}
+
+				function press(event) {
+					var dx
+					var dy
+					if (event.key == "ArrowRight") {
+						dx = 1
+					} else if (event.key == "ArrowLeft") {
+						dx = -1
+					} else if (event.key == "ArrowUp") {
+						dy = -1
+					} else if (event.key == "ArrowDown") {
+						dy = 1
+					} else {
+						return
+					}
+					event.preventDefault()
+					moveBelly(dy)
+				}
+
+				function moveBelly(d) {
+					var bellyNode = document.querySelector(".belly-crescent")
+
+					belly.top += d/20
+
+					bellyNode.style.transform = "translateY("+belly.top*20+"px) scale(2)"
+				}
+
 
 				var featherNode
 				var feathers = {
