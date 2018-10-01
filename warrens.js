@@ -29,7 +29,6 @@ library.using([
 			}),
 			element.style("body", {
 				"font-family": "sans-serif",
-				"color": "#538",
 			}),
 			element.style("h1", {
 				"font-size": "1em",
@@ -61,10 +60,6 @@ library.using([
 			}),
 
 		element.style(".crescent", {
-				"border": "5px solid red",
-				"border-left": "none",
-				"border-bottom": "none",
-				"border-top": "none",
 				"border-radius": "20px",
 				"width": "20px",
 				"height": "20px",
@@ -96,9 +91,13 @@ library.using([
 				// "o'clock": 6,
 				// "depth": 4,
 
-				if (options.color) {
-					this.appendStyles({
-						"border-color": options.color})}
+				var color = options.color || "red"
+				var depth = options.depth || 1
+
+				var stretch = "scaleX("
+				this.appendStyles({
+					"border-right": "10px solid "+color,
+					"transform": "scale("+depth+")"})
 			})
 
 		var page = [
@@ -116,7 +115,7 @@ library.using([
 				element(".crescent.feather-top"),
 				element(".crescent.feather-bottom")),
 			crescent({
-				"color": "pink"
+				"color": "pink",
 				"belly": 180,
 				"o'clock": 6,
 				"depth": 4,
