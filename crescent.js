@@ -9,69 +9,86 @@ module.exports = library.export(
 
     function crescent(name, options) {
 
-        var depth = options.depth
-        var top = options.top
-        if (top == null) { top = 0 }
-        var width = options.width
-        var oclock = options.oclock
-        var radians = oclock*Math.PI/6
-        var trailingRadians = radians - width
-        var specular = Math.sin(radians/2-0.2)
+      var depth = options.depth
+      var top = options.top
+      if (top == null) { top = 0 }
+      var width = options.width
+      var oclock = options.oclock
+      var radians = oclock*Math.PI/6
 
-        var baseColor = [300, 40, 60]
-        var color = [300, Math.round(40+60*specular)+"%", Math.round(60+36*specular)+"%"]
-
-        color = "hsl("+color.join(",")+")"
-
-        var didPassCameraPlane = radians > Math.PI/2
-
-        var trailDidPassCameraPlane = trailingRadians > Math.PI/2
-
-        var didPassObserverLine = radians > Math.PI
-
-        var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
-
-        if (didPassObserverLine) {
-          debugger
-          var maxX = Math.sin(
-            trailingRadians)
-
-        } else if (trailDidPassCameraPlane) {
-          var maxX = Math.sin(
-            trailingRadians)
-
-        } else if (didPassCameraPlane) {
-          var maxX = 1
-          dx = 1 - Math.sin(trailingRadians)
-
-        } else {
-
-          var maxX = Math.sin(
-            radians)
-        }
-
-      logFields([name, dx, maxX, top, depth, color])
+      var x = calculateCrescentScreenX(radians, width)
+      var dx = x[1]
+      var maxX = x[0]
 
       var remainder = dx - maxX
-
 
       if (remainder > 0) {
         dx = maxX
       }
 
-      var crescent = crescentTemplate("right", name, dx, maxX, top, depth, color)
+      var crescent = element(".crescent.crescent-"+name)
 
-      if (name == "7-oclock") {
-        debugger
-      }
-      console.log("r", remainder)
+      crescent.appendStyles(crescentStyles("right", dx, maxX, top, depth, radians))
+
+      var shadow = element(".crescent.shadow-"+name)
 
       if (remainder > 0) {
-        var crescentShadow = crescentTemplate("left", name+"-shadow", remainder, remainder, top, depth, color)
-        return [crescent, crescentShadow]
+        shadow.appendStyles(crescentStyles("left", remainder, remainder, top, depth, radians))
       } else {
-        return [crescent]
+        shadow.addSelector(".template")
       }
+
+      return [crescent, shadow]
+    }
+
+    function defineUpdateOn(bridge) {
+
+      var calc = bridge.defineFunction(calculateCrescentScreenX)
+      var styles = bridge.defineFunction(crescentStyles)
+
+      var binding = bridge.defineFunction(
+        [calc, styles],
+        function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
+
+          var radians = oclock*Math.PI/6
+
+          var x = calculateCrescentScreenX(radians, width)
+          var dx = x[1]
+          var maxX = x[0]
+
+          var remainder = dx - maxX
+
+          if (remainder > 0) {
+            dx = maxX
+          }
+
+          var crescent = document.querySelector(".crescent-"+name+"")
+
+          var styles = crescentStyles("right", dx, maxX, top, depth, radians)
+
+          crescent.style.left = styles.left
+          crescent.style.top = styles.top
+          crescent.style.transform = styles.transform
+          crescent.style['border-right'] = styles['border-right']
+
+          var shadow = document.querySelector(".shadow-"+name+"")
+
+          if (remainder > 0) {
+            shadow.classList.remove("template")
+            styles = crescentStyles("left", remainder, remainder, top, depth, radians)
+
+            shadow.style.left = styles.left
+            shadow.style.top = styles.top
+            shadow.style.transform = styles.transform
+            shadow.style['border-right'] = styles['border-right']
+
+          } else {
+            shadow.classList.add("template")
+          }
+        }
+      )
+
+      return binding
     }
 
     function logFields(values) {
@@ -90,44 +107,77 @@ module.exports = library.export(
       console.log(out)
     }
 
-    var crescentTemplate = element.template(
-      ".crescent",
-      function(hemisphere, name, dx, maxX, top, depth, color) {
-        var transform
+    function calculateCrescentScreenX(radians, width) {
+      var trailingRadians = radians - width
 
-        if (hemisphere == "left") {
-          var flipFactor = -20*depth
-          transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
-        }
+      var didPassCameraPlane = radians > Math.PI/2
 
-        if (top) {
-          transform = (transform||"")+" translateY("+top*20+"px)" 
-        }
+      var trailDidPassCameraPlane = trailingRadians > Math.PI/2
 
-        if (depth) {
-          transform = (transform||"")+" scale("+depth+")" 
-        }
+      var didPassObserverLine = radians > Math.PI
 
-        var left = (maxX - dx)*10*depth
+      var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
 
-        var borderWidth = dx*10/maxX
+      if (didPassObserverLine) {
+        debugger
+        var maxX = Math.sin(
+          trailingRadians)
 
-        borderWidth = Math.round(borderWidth)
+      } else if (trailDidPassCameraPlane) {
+        var maxX = Math.sin(
+          trailingRadians)
 
-        transform = (transform||"")+" scaleX("+maxX+")"
+      } else if (didPassCameraPlane) {
+        var maxX = 1
+        dx = 1 - Math.sin(trailingRadians)
 
-        this.appendStyles({
-          "left": left+"px",
-          "border-right": borderWidth+"px solid "+color})
+      } else {
 
-        if (transform) {
-          this.appendStyles({
-            "transform": transform})
-        }
+        var maxX = Math.sin(
+          radians)
+      }
 
-        this.addSelector(
-          "."+name+"-crescent")
-      })
+      return [maxX, dx]
+    }
+
+    function crescentStyles(hemisphere, dx, maxX, top, depth, radians) {
+
+      var transform
+
+      var specular = Math.sin(radians/2-0.2)
+
+      var baseColor = [300, 40, 60]
+      var color = [300, Math.round(40+60*specular)+"%", Math.round(60+36*specular)+"%"]
+
+      color = "hsl("+color.join(",")+")"
+
+      if (hemisphere == "left") {
+        var flipFactor = -20*depth
+        transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
+      }
+
+      if (top) {
+        transform = (transform||"")+" translateY("+top*20+"px)" 
+      }
+
+      if (depth) {
+        transform = (transform||"")+" scale("+depth+")" 
+      }
+
+      var left = (maxX - dx)*10*depth
+
+      var borderWidth = dx*10/maxX
+
+      borderWidth = Math.round(borderWidth)
+
+      transform = (transform||"")+" scaleX("+maxX+")"
+
+      return {
+        "left": left+"px",
+        "border-right": borderWidth+"px solid "+color,
+        "transform": transform
+      }
+    }
 
     var stylesheet = element.stylesheet([
       element.style(".crescent", {
@@ -201,6 +251,8 @@ module.exports = library.export(
         "p",
         "7 o'clock"),
     ]
+
+    crescent.defineUpdateOn = defineUpdateOn
 
     return crescent
   }

@@ -13,6 +13,9 @@ library.using([
 		crescent.addTo(bridge)
 		
 		var stylesheet = element.stylesheet([
+			element.style(".crescent.template", {
+				"display": "none",
+			}),
 			element.style(".key", {
 				"background": "#223",
 				"border-radius": "3px",
@@ -126,13 +129,13 @@ library.using([
 			element(
 				"p",
 				key(
-					"up"),
-				"move belly up"),
+					"left"),
+				"rotate feather left"),
 			element(
 				"p",
 				key(
-					"down"),
-				"move belly down"),
+					"right"),
+				"rotate feather right"),
 			// bird,
 			crescent.testCrescents,
 		]
@@ -171,9 +174,12 @@ library.using([
 		]
 
 
+		var updateCrescent = crescent.defineUpdateOn(bridge)
+
 		var press = bridge.defineSingleton(
 			"press",
-			function() {
+			[updateCrescent],
+			function(updateCrescent) {
 
 				var belly = {
 					"top": 1.0,
@@ -181,12 +187,12 @@ library.using([
 				}
 
 				function press(event) {
-					var dolock
+					var doclock
 					var dtop
 					if (event.key == "ArrowRight") {
-						doc = 1
+						doclock = 1/10
 					} else if (event.key == "ArrowLeft") {
-						doc = -1
+						doclock = -1/10
 					} else if (event.key == "ArrowUp") {
 						dtop = -1
 					} else if (event.key == "ArrowDown") {
@@ -194,21 +200,22 @@ library.using([
 					} else {
 						return
 					}
+
+					belly.oclock += doclock
 					event.preventDefault()
-					moveBelly(dtop, doclock)
+
+					updateCrescent("3-oclock", belly.oclock, Math.PI/2, 0, 2.0)
+
+					// moveBelly(dtop, doclock)
 				}
 
+				var oclock = 3
+
 				function moveBelly(dtop, doclock) {
-					var bellyNode = document.querySelector(".belly-crescent")
+					var bellyNode = document.querySelector(".3-oclock-crescent")
 
-					belly.top += dtop/20
+					oclock += doclock/10
 
-					borderWidth = 10 * belly.oclock
-
-					// 3 oclock = 10 width
-					// 
-
-					belly.oclock += doclock/5
 					bellyNode.style.transform = "translateY("+belly.top*20+"px) scale(2)"
 				}
 
