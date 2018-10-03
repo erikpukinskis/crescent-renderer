@@ -19,15 +19,9 @@ module.exports = library.export(
         var specular = Math.sin(radians/2-0.2)
 
         var baseColor = [300, 40, 60]
-        var color = [300, Math.round(40+60*specular)+"%", Math.round(60+30*specular)+"%"]
+        var color = [300, Math.round(40+60*specular)+"%", Math.round(60+36*specular)+"%"]
 
         color = "hsl("+color.join(",")+")"
-
-
-        // if (isShadow) {
-        //   transform = (transform||"")+" rotate(180deg) translateY(-20px) "
-        // }
-
 
         var didPassCameraPlane = radians > Math.PI/2
 
@@ -41,7 +35,7 @@ module.exports = library.export(
           debugger
           var maxX = Math.sin(
             trailingRadians)
-          dx = maxX
+
         } else if (trailDidPassCameraPlane) {
           var maxX = Math.sin(
             trailingRadians)
@@ -58,13 +52,26 @@ module.exports = library.export(
 
       logFields([name, dx, maxX, top, depth, color])
 
+      var remainder = dx - maxX
 
-      var els = [
-        crescentTemplate(name, dx, maxX, top, depth, color),
-        // crescentTemplate(name+"-shadow", dx, maxX, color),
-      ]
 
-      return els
+      if (remainder > 0) {
+        dx = maxX
+      }
+
+      var crescent = crescentTemplate("right", name, dx, maxX, top, depth, color)
+
+      if (name == "7-oclock") {
+        debugger
+      }
+      console.log("r", remainder)
+
+      if (remainder > 0) {
+        var crescentShadow = crescentTemplate("left", name+"-shadow", remainder, remainder, top, depth, color)
+        return [crescent, crescentShadow]
+      } else {
+        return [crescent]
+      }
     }
 
     function logFields(values) {
@@ -73,7 +80,7 @@ module.exports = library.export(
         var value = values[i]
 
         if (typeof value == "number") {
-          value = value.toFixed(1)
+          value = value.toFixed(2)
         } else {
           value = value.slice(0, 15)
         }
@@ -82,13 +89,19 @@ module.exports = library.export(
       }
       console.log(out)
     }
+
     var crescentTemplate = element.template(
       ".crescent",
-      function(name, dx, maxX, top, depth, color) {
+      function(hemisphere, name, dx, maxX, top, depth, color) {
         var transform
 
+        if (hemisphere == "left") {
+          var flipFactor = -20*depth
+          transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
+        }
+
         if (top) {
-          transform = (transform||"")+" translateY("+options.top*20+"px)" 
+          transform = (transform||"")+" translateY("+top*20+"px)" 
         }
 
         if (depth) {
@@ -97,11 +110,8 @@ module.exports = library.export(
 
         var left = (maxX - dx)*10*depth
 
-        if (dx > maxX) {
-          var borderWidth = maxX*10/maxX
-        } else {
-          var borderWidth = dx*10/maxX
-        }
+        var borderWidth = dx*10/maxX
+
         borderWidth = Math.round(borderWidth)
 
         transform = (transform||"")+" scaleX("+maxX+")"
