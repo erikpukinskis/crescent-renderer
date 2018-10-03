@@ -3,12 +3,15 @@ var library = require("module-library")(require)
 library.using([
 	"browser-bridge",
 	"web-site",
-	"web-element"],
-	function(BrowserBridge, WebSite, element) {
+	"web-element",
+	"./crescent"],
+	function(BrowserBridge, WebSite, element, crescent) {
 
 
 		var bridge = new BrowserBridge
 
+		crescent.addTo(bridge)
+		
 		var stylesheet = element.stylesheet([
 			element.style(".key", {
 				"background": "#223",
@@ -59,13 +62,6 @@ library.using([
 				"top": "240px",
 			}),
 
-		element.style(".crescent", {
-				"border-radius": "20px",
-				"width": "20px",
-				"height": "20px",
-				"position": "absolute",
-				"transform-origin": "20px top",
-			}),
 			element.style(".feather-top", {
 				"left": "27px",
 			    "top": "53px",
@@ -77,43 +73,17 @@ library.using([
 		    	"left": "41px",
 		   		"top": "71px",
 		   	    "transform": "rotate(-191deg) scaleY(0.8) scaleX(0.6)",
-		   	})
+		   	}),
+			element.style(".voxel", {
+				"position": "relative",
+				"width": "40px",
+				"height": "40px",
+				"margin-top": "20px",
+				}),
 		 ])
 
 
 		bridge.addToHead(stylesheet)
-
-		var crescent = element.template(
-			".crescent",
-			function(name, options) {
-
-				// "color": "pink"
-				// "belly": 180,
-				// "o'clock": 6,
-				// "depth": 4,
-				// "top": 1
-
-				var transform
-				var color = options.color || "red"
-				this.appendStyles({
-					"border-right": "10px solid "+color})				
-				var depth = options.depth || 1
-
-				if (options.top) {
-					transform = (transform||"")+" translateY("+options.top*20+"px)" 
-				}
-
-				if (options.depth) {
-					transform = (transform||"")+" scale("+options.depth+")" 
-				}
-
-				if (transform) {
-					this.appendStyles({
-						"transform": transform})
-				}
-
-				this.addSelector(
-					"."+name+"-crescent")})
 
 		var key = element.template(
 			"span.key",
@@ -125,6 +95,29 @@ library.using([
 					"right": "&#9654;"}
 				this.addChild(
 					character[name] || name)})
+
+		// var bird = element(
+		// 	".bird",
+		// 	element.style({
+		// 		"position": "absolute",
+		// 		"left": "200px",
+		// 		"top": "100px",
+		// 	}),
+		// 	crescent(
+		// 		"back",{
+		// 		"color": "pink",
+		// 		"belly": 180,
+		// 		"oclock": 6,
+		// 		"depth": 4,
+		// 	}),
+		// 	crescent(
+		// 		"belly",{
+		// 		"color": "palevioletred",
+		// 		"belly": 180,
+		// 		"oclock": 6,
+		// 		"depth": 2,
+		// 		"top": 1,
+		// 	}))
 
 		var page = [
 			element(
@@ -140,35 +133,17 @@ library.using([
 				key(
 					"down"),
 				"move belly down"),
+			// bird,
+			crescent.testCrescents,
+		]
+
+		var feathers = [
 			element(
 				".feather.neck-feather",
 				element(
 					".crescent.feather-top"),
 				element(
 					".crescent.feather-bottom")),
-
-			element(
-				".bird",
-				element.style({
-					"position": "absolute",
-					"left": "200px",
-					"top": "100px",
-				}),
-				crescent(
-					"back",{
-					"color": "pink",
-					"belly": 180,
-					"o'clock": 6,
-					"depth": 4,
-				}),
-				crescent(
-					"belly",{
-					"color": "palevioletred",
-					"belly": 180,
-					"o'clock": 6,
-					"depth": 2,
-					"top": 1,
-				})),
 			element(
 				".feather.belly",
 				element(
@@ -192,7 +167,7 @@ library.using([
 				element(
 					".crescent.feather-top"),
 				element(
-					".crescent.feather-bottom")),
+					".crescent.feather-bottom"))
 		]
 
 
@@ -202,31 +177,38 @@ library.using([
 
 				var belly = {
 					"top": 1.0,
+					"oclock": 3.0,
 				}
 
 				function press(event) {
-					var dx
-					var dy
+					var dolock
+					var dtop
 					if (event.key == "ArrowRight") {
-						dx = 1
+						doc = 1
 					} else if (event.key == "ArrowLeft") {
-						dx = -1
+						doc = -1
 					} else if (event.key == "ArrowUp") {
-						dy = -1
+						dtop = -1
 					} else if (event.key == "ArrowDown") {
-						dy = 1
+						dtop = 1
 					} else {
 						return
 					}
 					event.preventDefault()
-					moveBelly(dy)
+					moveBelly(dtop, doclock)
 				}
 
-				function moveBelly(d) {
+				function moveBelly(dtop, doclock) {
 					var bellyNode = document.querySelector(".belly-crescent")
 
-					belly.top += d/20
+					belly.top += dtop/20
 
+					borderWidth = 10 * belly.oclock
+
+					// 3 oclock = 10 width
+					// 
+
+					belly.oclock += doclock/5
 					bellyNode.style.transform = "translateY("+belly.top*20+"px) scale(2)"
 				}
 
