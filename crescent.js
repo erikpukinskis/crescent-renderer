@@ -5,10 +5,13 @@ module.exports = library.export(
   "web-element"],
   function (element) {
 
+    logFields(["name", "dx", "maxX", "top", "depth", "color"])
+
     function crescent(name, options) {
 
         var depth = options.depth
         var top = options.top
+        if (top == null) { top = 0 }
         var width = options.width
         var oclock = options.oclock
         var radians = oclock*Math.PI/6
@@ -16,7 +19,7 @@ module.exports = library.export(
         var specular = Math.sin(radians/2-0.2)
 
         var baseColor = [300, 40, 60]
-        var color = [300, 40+60*specular+"%", 60+30*specular+"%"]
+        var color = [300, Math.round(40+60*specular)+"%", Math.round(60+30*specular)+"%"]
 
         color = "hsl("+color.join(",")+")"
 
@@ -30,9 +33,16 @@ module.exports = library.export(
 
         var trailDidPassCameraPlane = trailingRadians > Math.PI/2
 
+        var didPassObserverLine = radians > Math.PI
+
         var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
 
-        if (trailDidPassCameraPlane) {
+        if (didPassObserverLine) {
+          debugger
+          var maxX = Math.sin(
+            trailingRadians)
+          dx = maxX
+        } else if (trailDidPassCameraPlane) {
           var maxX = Math.sin(
             trailingRadians)
 
@@ -46,6 +56,9 @@ module.exports = library.export(
             radians)
         }
 
+      logFields([name, dx, maxX, top, depth, color])
+
+
       var els = [
         crescentTemplate(name, dx, maxX, top, depth, color),
         // crescentTemplate(name+"-shadow", dx, maxX, color),
@@ -54,6 +67,21 @@ module.exports = library.export(
       return els
     }
 
+    function logFields(values) {
+      var out = ""
+      for(var i=0; i<values.length; i++) {
+        var value = values[i]
+
+        if (typeof value == "number") {
+          value = value.toFixed(1)
+        } else {
+          value = value.slice(0, 15)
+        }
+        var pad = new Array(15 - value.length).join(" ")
+        out += value + pad
+      }
+      console.log(out)
+    }
     var crescentTemplate = element.template(
       ".crescent",
       function(name, dx, maxX, top, depth, color) {
@@ -67,18 +95,20 @@ module.exports = library.export(
           transform = (transform||"")+" scale("+depth+")" 
         }
 
-        var pixelWidth = dx*10/maxX
-        var pixelGap = Math.max(0, (10-pixelWidth)*2)
+        var left = (maxX - dx)*10*depth
+
+        if (dx > maxX) {
+          var borderWidth = maxX*10/maxX
+        } else {
+          var borderWidth = dx*10/maxX
+        }
+        borderWidth = Math.round(borderWidth)
+
         transform = (transform||"")+" scaleX("+maxX+")"
 
-        if (pixelWidth > maxX*10) {
-          pixelWidth = maxX*10
-        }
-
-        pixelWidth = Math.round(pixelWidth)
         this.appendStyles({
-          "left": pixelGap+"px",
-          "border-right": pixelWidth+"px solid "+color})
+          "left": left+"px",
+          "border-right": borderWidth+"px solid "+color})
 
         if (transform) {
           this.appendStyles({
@@ -112,6 +142,7 @@ module.exports = library.export(
         true)}
 
     crescent.testCrescents = [      
+
       element(
         ".voxel",
         crescent(
@@ -136,7 +167,6 @@ module.exports = library.export(
         "p",
         "4 o'clock"),
 
-
       element(
         ".voxel",
         crescent(
@@ -148,7 +178,6 @@ module.exports = library.export(
       element(
         "p",
         "5 o'clock"),
-
 
       element(
         ".voxel",
