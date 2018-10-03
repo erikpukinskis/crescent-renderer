@@ -7,9 +7,48 @@ module.exports = library.export(
 
     function crescent(name, options) {
 
+        var depth = options.depth
+        var top = options.top
+        var width = options.width
+        var oclock = options.oclock
+        var radians = oclock*Math.PI/6
+        var trailingRadians = radians - width
+        var specular = Math.sin(radians/2-0.2)
+
+        var baseColor = [300, 40, 60]
+        var color = [300, 40+60*specular+"%", 60+30*specular+"%"]
+
+        color = "hsl("+color.join(",")+")"
+
+
+        // if (isShadow) {
+        //   transform = (transform||"")+" rotate(180deg) translateY(-20px) "
+        // }
+
+
+        var didPassCameraPlane = radians > Math.PI/2
+
+        var trailDidPassCameraPlane = trailingRadians > Math.PI/2
+
+        var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
+
+        if (trailDidPassCameraPlane) {
+          var maxX = Math.sin(
+            trailingRadians)
+
+        } else if (didPassCameraPlane) {
+          var maxX = 1
+          dx = 1 - Math.sin(trailingRadians)
+
+        } else {
+
+          var maxX = Math.sin(
+            radians)
+        }
+
       var els = [
-        crescentTemplate(name, options),
-        // crescentTemplate(name+"-shadow", options, true),
+        crescentTemplate(name, dx, maxX, top, depth, color),
+        // crescentTemplate(name+"-shadow", dx, maxX, color),
       ]
 
       return els
@@ -17,87 +56,24 @@ module.exports = library.export(
 
     var crescentTemplate = element.template(
       ".crescent",
-      function(name, options, isShadow) {
-
-        // "color": "pink"
-        // "belly": 180,
-        // "o'clock": 6,
-        // "depth": 4,
-        // "top": 1
-
+      function(name, dx, maxX, top, depth, color) {
         var transform
 
-        var color = options.color || "red"
-
-        if (options.depth == null) {
-          var depth = 1
-        } else {             
-          var depth = options.depth
-        }
-
-        if (options.oclock == null) {
-          var oclock = 3
-        } else {
-          var oclock = options.oclock
-        }
-
-        if (options.width == null) {
-          var width = Math.PI/6
-        } else {
-          var width = options.width
-        }
-
-        var radians = oclock*Math.PI/6
-        var trailingRadians = radians - width
-
-        if (options.top != null) {
+        if (top) {
           transform = (transform||"")+" translateY("+options.top*20+"px)" 
         }
 
-        if (options.depth) {
-          transform = (transform||"")+" scale("+options.depth+")" 
+        if (depth) {
+          transform = (transform||"")+" scale("+depth+")" 
         }
 
-        if (isShadow) {
-          transform = (transform||"")+" rotate(180deg) translateY(-20px) "
-        }
-
-
-        if (options.oclock) {
-          var didPassCameraPlane = radians > Math.PI/2
-
-          var trailDidPassCameraPlane = trailingRadians > Math.PI/2
-
-          var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
-
-          if (trailDidPassCameraPlane) {
-            var maxX = Math.sin(
-              trailingRadians)
-
-          } else if (didPassCameraPlane) {
-            var maxX = 1
-            dx = 1 - Math.sin(trailingRadians)
-
-          } else {
-
-            var maxX = Math.sin(
-              radians)
-          }
-
-          var pixelWidth = dx*10/maxX
-          var pixelGap = Math.max(0, (10-pixelWidth)*2)
-          transform = (transform||"")+" scaleX("+maxX+")"
-        }
-
-
-        console.log(name, radians, pixelGap)
-
-        debugger
+        var pixelWidth = dx*10/maxX
+        var pixelGap = Math.max(0, (10-pixelWidth)*2)
+        transform = (transform||"")+" scaleX("+maxX+")"
 
         if (pixelWidth > maxX*10) {
           pixelWidth = maxX*10
         }
-
 
         pixelWidth = Math.round(pixelWidth)
         this.appendStyles({
@@ -140,7 +116,6 @@ module.exports = library.export(
         ".voxel",
         crescent(
           "3-oclock",{
-          "color": "thistle",
           "width": Math.PI/2,
           "oclock": 3,
           "depth": 2,
@@ -153,7 +128,6 @@ module.exports = library.export(
         ".voxel",
         crescent(
           "4-oclock",{
-          "color": "plum",
           "width": Math.PI/2,
           "oclock": 4,
           "depth": 2,
@@ -167,7 +141,6 @@ module.exports = library.export(
         ".voxel",
         crescent(
           "5-oclock",{
-          "color": "lightslategray",
           "width": Math.PI/6,
           "oclock": 5,
           "depth": 2,
@@ -181,7 +154,6 @@ module.exports = library.export(
         ".voxel",
         crescent(
           "7-oclock",{
-          "color": "violet",
           "width": Math.PI/3,
           "oclock": 7,
           "depth": 2,
