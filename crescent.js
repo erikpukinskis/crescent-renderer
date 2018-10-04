@@ -16,34 +16,21 @@ module.exports = library.export(
       var oclock = options.oclock
       var radians = oclock*Math.PI/6
 
-      debugger
-      var x = calculateCrescentScreenX(radians, width)
-      var minX = x[0]
-      var maxX = x[1]
+      var data = calculateCrescentScreenX(radians, width)
 
       var crescent = element(".crescent.crescent-"+name)
 
-      if (maxX > 0) {
-        if (minX < 0) {
-          var dx = maxX 
-        } else {
-          var dx = maxX - minX
-        }
-        crescent.appendStyles(crescentStyles(dx, maxX, top, depth, radians))
+
+      if (data.rightHandDx > 0) {
+        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians))
       } else {
         crescent.addSelector(".template")
       }
 
       var shadow = element(".crescent.shadow-"+name)
 
-      if (minX < 0) {
-        if (maxX > 0) {
-          var dx = minX
-        } else {
-          var dx = minX - maxX
-        }
-
-        shadow.appendStyles(crescentStyles(minX, dx, top, depth, radians))
+      if (data.leftHandDx) {
+        shadow.appendStyles(crescentStyles(data.minX, data.leftHandDx, top, depth, radians))
 
       } else {
         shadow.addSelector(".template")
@@ -64,24 +51,43 @@ module.exports = library.export(
       var trailingSin = Math.sin(trailingRadians)
 
 
-      if (radians > radiansAtPeak && trailingRadians < trailingRadiansAtPeak) {
+      if (radians >= radiansAtPeak && trailingRadians < trailingRadiansAtPeak) {
         var maxX = 1
         var minX = Math.min(sin, trailingSin)
 
-      } else if (trailingRadians > trailingRadiansAtPeak && radians < radiansAtTrough) {
+      } else if (trailingRadians >= trailingRadiansAtPeak && radians < radiansAtTrough) {
         var maxX = Math.sin(trailingRadians)
         var minX = Math.sin(radians)
 
-      } else if (radians > radiansAtTrough && trailingRadians < trailingRadiansAtTrough) {
+      } else if (radians >= radiansAtTrough && trailingRadians < trailingRadiansAtTrough) {
         var maxX = Math.max(sin, trailingSin)
         var minX = -1
 
-      } else {
+      } else if (trailingRadians >= trailingRadiansAtTrough && radians < radiansAtPeak) {
         var maxX = sin
         var minX = trailingSin
+
+      } else {
+        throw new Error("mathematically impossible!")
       }
 
-      return [minX, maxX]
+      var data = {
+        minX: minX,
+        maxX: maxX}
+
+      if (maxX > 0) {
+        if (minX < 0) {
+          data.rightHandDx = maxX 
+        } else {
+          data.rightHandDx = maxX - minX}}
+
+      if (minX < 0) {
+        if (maxX > 0) {
+          data.leftHandDx = minX
+        } else {
+          data.leftHandDx = minX - maxX}}
+
+      return data
     }
 
     function crescentStyles(dx, maxX, top, depth, radians) {
@@ -91,7 +97,7 @@ module.exports = library.export(
       var specular = Math.sin(radians/2-0.2)
 
       var baseColor = [300, 40, 60]
-      var color = [300, Math.round(40+60*specular)+"%", Math.round(60+36*specular)+"%"]
+      var color = [300, Math.round(40+60*specular)+"%", Math.round(60+30*specular)+"%"]
 
       color = "hsl("+color.join(",")+")"
 
