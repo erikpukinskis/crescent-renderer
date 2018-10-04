@@ -52,72 +52,6 @@ module.exports = library.export(
       return [crescent, shadow]
     }
 
-    function defineUpdateOn(bridge) {
-
-      var calc = bridge.defineFunction(calculateCrescentScreenX)
-      var styles = bridge.defineFunction(crescentStyles)
-
-      var binding = bridge.defineFunction(
-        [calc, styles],
-        function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
-
-          var radians = oclock*Math.PI/6
-
-          var x = calculateCrescentScreenX(radians, width)
-          var dx = x[1]
-          var maxX = x[0]
-
-          var remainder = dx - maxX
-
-          if (remainder > 0) {
-            dx = maxX
-          }
-
-          var crescent = document.querySelector(".crescent-"+name+"")
-
-          var styles = crescentStyles("right", dx, maxX, top, depth, radians)
-
-          crescent.style.left = styles.left
-          crescent.style.top = styles.top
-          crescent.style.transform = styles.transform
-          crescent.style['border-right'] = styles['border-right']
-
-          var shadow = document.querySelector(".shadow-"+name+"")
-
-          if (remainder > 0) {
-            shadow.classList.remove("template")
-            styles = crescentStyles("left", remainder, remainder, top, depth, radians)
-
-            shadow.style.left = styles.left
-            shadow.style.top = styles.top
-            shadow.style.transform = styles.transform
-            shadow.style['border-right'] = styles['border-right']
-
-          } else {
-            shadow.classList.add("template")
-          }
-        }
-      )
-
-      return binding
-    }
-
-    function logFields(values) {
-      var out = ""
-      for(var i=0; i<values.length; i++) {
-        var value = values[i]
-
-        if (typeof value == "number") {
-          value = value.toFixed(2)
-        } else {
-          value = value.slice(0, 15)
-        }
-        var pad = new Array(15 - value.length).join(" ")
-        out += value + pad
-      }
-      console.log(out)
-    }
-
     function calculateCrescentScreenX(radians, width) {
       var trailingRadians = radians - width
 
@@ -211,19 +145,69 @@ module.exports = library.export(
         "warrens/crescent",
         true)}
 
+    function defineUpdateOn(bridge) {
+
+      var calc = bridge.defineFunction(calculateCrescentScreenX)
+      var styles = bridge.defineFunction(crescentStyles)
+
+      var binding = bridge.defineFunction(
+        [calc, styles],
+        function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
+
+          var radians = oclock*Math.PI/6
+
+          var x = calculateCrescentScreenX(radians, width)
+          var dx = x[1]
+          var maxX = x[0]
+
+          var remainder = dx - maxX
+
+          if (remainder > 0) {
+            dx = maxX
+          }
+
+          var crescent = document.querySelector(".crescent-"+name+"")
+
+          var styles = crescentStyles("right", dx, maxX, top, depth, radians)
+
+          crescent.style.left = styles.left
+          crescent.style.top = styles.top
+          crescent.style.transform = styles.transform
+          crescent.style['border-right'] = styles['border-right']
+
+          var shadow = document.querySelector(".shadow-"+name+"")
+
+          if (remainder > 0) {
+            shadow.classList.remove("template")
+            styles = crescentStyles("left", remainder, remainder, top, depth, radians)
+
+            shadow.style.left = styles.left
+            shadow.style.top = styles.top
+            shadow.style.transform = styles.transform
+            shadow.style['border-right'] = styles['border-right']
+
+          } else {
+            shadow.classList.add("template")
+          }
+        }
+      )
+
+      return binding
+    }
+
     crescent.testCrescents = [      
 
-      element(
-        ".voxel",
-        crescent(
-          "3-oclock",{
-          "width": Math.PI/2,
-          "oclock": 3,
-          "depth": 2,
-        })),
-      element(
-        "p",
-        "3 o'clock"),
+      // element(
+      //   ".voxel",
+      //   crescent(
+      //     "3-oclock",{
+      //     "width": Math.PI/2,
+      //     "oclock": 3,
+      //     "depth": 2,
+      //   })),
+      // element(
+      //   "p",
+      //   "3 o'clock"),
 
       element(
         ".voxel",
@@ -237,30 +221,47 @@ module.exports = library.export(
         "p.label-4-oclock",
         "4 o'clock"),
 
-      element(
-        ".voxel",
-        crescent(
-          "5-oclock",{
-          "width": Math.PI/6,
-          "oclock": 5,
-          "depth": 2,
-        })),
-      element(
-        "p",
-        "5 o'clock"),
+      // element(
+      //   ".voxel",
+      //   crescent(
+      //     "5-oclock",{
+      //     "width": Math.PI/6,
+      //     "oclock": 5,
+      //     "depth": 2,
+      //   })),
+      // element(
+      //   "p",
+      //   "5 o'clock"),
 
-      element(
-        ".voxel",
-        crescent(
-          "7-oclock",{
-          "width": Math.PI/3,
-          "oclock": 7,
-          "depth": 2,
-        })),
-      element(
-        "p",
-        "7 o'clock"),
+      // element(
+      //   ".voxel",
+      //   crescent(
+      //     "7-oclock",{
+      //     "width": Math.PI/3,
+      //     "oclock": 7,
+      //     "depth": 2,
+      //   })),
+      // element(
+      //   "p",
+      //   "7 o'clock"),
     ]
+
+
+    function logFields(values) {
+      var out = ""
+      for(var i=0; i<values.length; i++) {
+        var value = values[i]
+
+        if (typeof value == "number") {
+          value = value.toFixed(2)
+        } else {
+          value = value.slice(0, 15)
+        }
+        var pad = new Array(15 - value.length).join(" ")
+        out += value + pad
+      }
+      console.log(out)
+    }
 
     crescent.defineUpdateOn = defineUpdateOn
 
