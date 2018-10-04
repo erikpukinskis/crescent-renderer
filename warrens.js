@@ -90,7 +90,8 @@ library.using([
 
 		var key = element.template(
 			"span.key",
-			function(name) {
+			function(name, attributes) {
+				this.addAttributes(attributes)
 				var character = {
 					"left": "&#9664;",
 					"up": "&#9650;",
@@ -121,24 +122,6 @@ library.using([
 		// 		"depth": 2,
 		// 		"top": 1,
 		// 	}))
-
-		var page = [
-			element(
-				"h1",
-				"feathers!"),
-			element(
-				"p",
-				key(
-					"left"),
-				"rotate feather left"),
-			element(
-				"p",
-				key(
-					"right"),
-				"rotate feather right"),
-			// bird,
-			crescent.testCrescents,
-		]
 
 		var feathers = [
 			element(
@@ -187,22 +170,31 @@ library.using([
 				}
 
 				function press(event) {
+					if (typeof event == "string") {
+						var key = event
+					} else {
+						var key = event.key
+					}
+
 					var doclock
 					var dtop
-					if (event.key == "ArrowRight") {
+					if (key == "ArrowRight") {
 						doclock = 1/10
-					} else if (event.key == "ArrowLeft") {
+					} else if (key == "ArrowLeft") {
 						doclock = -1/10
-					} else if (event.key == "ArrowUp") {
+					} else if (key == "ArrowUp") {
 						dtop = -1
-					} else if (event.key == "ArrowDown") {
+					} else if (key == "ArrowDown") {
 						dtop = 1
 					} else {
 						return
 					}
 
+					if (doclock && event.preventDefault) {
+						event.preventDefault()
+					}
+
 					belly.oclock += doclock
-					event.preventDefault()
 
 					updateCrescent("3-oclock", belly.oclock, Math.PI/2, 0, 2.0)
 
@@ -240,6 +232,27 @@ library.using([
 				}
 
 				return press})
+
+
+		var page = [
+			element(
+				"h1",
+				"feathers!"),
+			element(
+				"p",
+				key(
+					"left",{
+					onclick: press.withArgs("ArrowLeft").evalable()}),
+				"rotate feather left"),
+			element(
+				"p",
+				key(
+					"right",{
+					onclick: press.withArgs("ArrowRight").evalable()}),
+				"rotate feather right"),
+			// bird,
+			crescent.testCrescents,
+		]
 
 		var body = element(
 			"body",{
