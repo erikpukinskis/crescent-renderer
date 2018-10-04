@@ -56,7 +56,7 @@ module.exports = library.export(
       var trailingRadians = radians - width
 
       var radiansAtPeak = Math.asin(1)
-      var trailingRadiansAtPeak = radiansAtPeak - width
+      var trailingRadiansAtPeak = radiansAtPeak + width
       var radiansAtTrough = radiansAtPeak + Math.PI
       var trailingRadiansAtTrough = trailingRadiansAtPeak + Math.PI
 
@@ -197,17 +197,17 @@ module.exports = library.export(
 
     crescent.testCrescents = [      
 
-      // element(
-      //   ".voxel",
-      //   crescent(
-      //     "3-oclock",{
-      //     "width": Math.PI/2,
-      //     "oclock": 3,
-      //     "depth": 2,
-      //   })),
-      // element(
-      //   "p",
-      //   "3 o'clock"),
+      element(
+        ".voxel",
+        crescent(
+          "3-oclock",{
+          "width": Math.PI/2,
+          "oclock": 3,
+          "depth": 2,
+        })),
+      element(
+        "p",
+        "3 o'clock, back 3 hours"),
 
       element(
         ".voxel",
@@ -219,31 +219,31 @@ module.exports = library.export(
         })),
       element(
         "p.label-4-oclock",
-        "4 o'clock"),
+        "4 o'clock, back 3 hours"),
 
-      // element(
-      //   ".voxel",
-      //   crescent(
-      //     "5-oclock",{
-      //     "width": Math.PI/6,
-      //     "oclock": 5,
-      //     "depth": 2,
-      //   })),
-      // element(
-      //   "p",
-      //   "5 o'clock"),
+      element(
+        ".voxel",
+        crescent(
+          "5-oclock",{
+          "width": Math.PI/6,
+          "oclock": 5,
+          "depth": 2,
+        })),
+      element(
+        "p",
+        "5 o'clock, back 1 hour"),
 
-      // element(
-      //   ".voxel",
-      //   crescent(
-      //     "7-oclock",{
-      //     "width": Math.PI/3,
-      //     "oclock": 7,
-      //     "depth": 2,
-      //   })),
-      // element(
-      //   "p",
-      //   "7 o'clock"),
+      element(
+        ".voxel",
+        crescent(
+          "7-oclock",{
+          "width": Math.PI/3,
+          "oclock": 7,
+          "depth": 2,
+        })),
+      element(
+        "p",
+        "7 o'clock, back two hours"),
     ]
 
 
