@@ -164,9 +164,15 @@ library.using([
 			[updateCrescent],
 			function(updateCrescent) {
 
-				var belly = {
-					"top": 1.0,
-					"oclock": 3.0,
+				var crescents = {
+					"3-oclock": {
+						"top": 1.0,
+						"oclock": 3.0,
+					},
+					"4-oclock": {
+						"top": 1.0,
+						"oclock": 4.0,
+					}
 				}
 
 				function press(event) {
@@ -194,41 +200,16 @@ library.using([
 						event.preventDefault()
 					}
 
-					belly.oclock += doclock
+					var name = "4-oclock"
 
-					updateCrescent("3-oclock", belly.oclock, Math.PI/2, 0, 2.0)
+					var crescent = crescents[name]
+					crescent.oclock += doclock
+
+					document.querySelector(".label-"+name).innerText = crescent.oclock.toFixed(2)+" o'clock"
+
+					updateCrescent(name, crescent.oclock, Math.PI/2, 0, 2.0)
 
 					// moveBelly(dtop, doclock)
-				}
-
-				var oclock = 3
-
-				function moveBelly(dtop, doclock) {
-					var bellyNode = document.querySelector(".3-oclock-crescent")
-
-					oclock += doclock/10
-
-					bellyNode.style.transform = "translateY("+belly.top*20+"px) scale(2)"
-				}
-
-
-				var featherNode
-				var feathers = {
-					"neck-feather": {
-						"left": 100,
-						"top": 100,
-					}
-				}
-				var feather
-
-				function moveSelectedFeather(d) {
-					if (!featherNode) {
-						featherNode = document.querySelector(".neck-feather")
-						feather = feathers["neck-feather"]
-					}
-
-					feather.left += d
-					featherNode.style.left = feather.left+"px"
 				}
 
 				return press})

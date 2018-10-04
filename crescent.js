@@ -16,24 +16,35 @@ module.exports = library.export(
       var oclock = options.oclock
       var radians = oclock*Math.PI/6
 
+      debugger
       var x = calculateCrescentScreenX(radians, width)
-      var dx = x[1]
-      var maxX = x[0]
-
-      var remainder = dx - maxX
-
-      if (remainder > 0) {
-        dx = maxX
-      }
+      var minX = x[0]
+      var maxX = x[1]
 
       var crescent = element(".crescent.crescent-"+name)
 
-      crescent.appendStyles(crescentStyles("right", dx, maxX, top, depth, radians))
+      if (maxX > 0) {
+        if (minX < 0) {
+          var dx = maxX 
+        } else {
+          var dx = maxX - minX
+        }
+        crescent.appendStyles(crescentStyles(dx, maxX, top, depth, radians))
+      } else {
+        crescent.addSelector(".template")
+      }
 
       var shadow = element(".crescent.shadow-"+name)
 
-      if (remainder > 0) {
-        shadow.appendStyles(crescentStyles("left", remainder, remainder, top, depth, radians))
+      if (minX < 0) {
+        if (maxX > 0) {
+          var dx = minX
+        } else {
+          var dx = minX - maxX
+        }
+
+        shadow.appendStyles(crescentStyles(minX, dx, top, depth, radians))
+
       } else {
         shadow.addSelector(".template")
       }
@@ -110,37 +121,36 @@ module.exports = library.export(
     function calculateCrescentScreenX(radians, width) {
       var trailingRadians = radians - width
 
-      var didPassCameraPlane = radians > Math.PI/2
+      var radiansAtPeak = Math.asin(1)
+      var trailingRadiansAtPeak = radiansAtPeak - width
+      var radiansAtTrough = radiansAtPeak + Math.PI
+      var trailingRadiansAtTrough = trailingRadiansAtPeak + Math.PI
 
-      var trailDidPassCameraPlane = trailingRadians > Math.PI/2
+      var sin = Math.sin(radians)
+      var trailingSin = Math.sin(trailingRadians)
 
-      var didPassObserverLine = radians > Math.PI
 
-      var dx = Math.abs(Math.sin(radians) - Math.sin(trailingRadians))
-
-      if (didPassObserverLine) {
-        debugger
-        var maxX = Math.sin(
-          trailingRadians)
-
-      } else if (trailDidPassCameraPlane) {
-        var maxX = Math.sin(
-          trailingRadians)
-
-      } else if (didPassCameraPlane) {
+      if (radians > radiansAtPeak && trailingRadians < trailingRadiansAtPeak) {
         var maxX = 1
-        dx = 1 - Math.sin(trailingRadians)
+        var minX = Math.min(sin, trailingSin)
+
+      } else if (trailingRadians > trailingRadiansAtPeak && radians < radiansAtTrough) {
+        var maxX = Math.sin(trailingRadians)
+        var minX = Math.sin(radians)
+
+      } else if (radians > radiansAtTrough && trailingRadians < trailingRadiansAtTrough) {
+        var maxX = Math.max(sin, trailingSin)
+        var minX = -1
 
       } else {
-
-        var maxX = Math.sin(
-          radians)
+        var maxX = sin
+        var minX = trailingSin
       }
 
-      return [maxX, dx]
+      return [minX, maxX]
     }
 
-    function crescentStyles(hemisphere, dx, maxX, top, depth, radians) {
+    function crescentStyles(dx, maxX, top, depth, radians) {
 
       var transform
 
@@ -151,9 +161,11 @@ module.exports = library.export(
 
       color = "hsl("+color.join(",")+")"
 
-      if (hemisphere == "left") {
+      if (dx < 0) {
         var flipFactor = -20*depth
         transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
+        dx = Math.abs(dx)
+        maxX = Math.abs(maxX)
       }
 
       if (top) {
@@ -167,8 +179,6 @@ module.exports = library.export(
       var left = (maxX - dx)*10*depth
 
       var borderWidth = dx*10/maxX
-
-      borderWidth = Math.round(borderWidth)
 
       transform = (transform||"")+" scaleX("+maxX+")"
 
@@ -224,7 +234,7 @@ module.exports = library.export(
           "depth": 2,
         })),
       element(
-        "p",
+        "p.label-4-oclock",
         "4 o'clock"),
 
       element(
