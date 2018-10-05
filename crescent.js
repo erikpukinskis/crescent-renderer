@@ -43,27 +43,25 @@ module.exports = library.export(
       var trailingRadians = radians - width
 
       var radiansAtPeak = Math.asin(1)
-      var trailingRadiansAtPeak = radiansAtPeak + width
       var radiansAtTrough = radiansAtPeak + Math.PI
-      var trailingRadiansAtTrough = trailingRadiansAtPeak + Math.PI
 
       var sin = Math.sin(radians)
       var trailingSin = Math.sin(trailingRadians)
 
 
-      if (radians >= radiansAtPeak && trailingRadians < trailingRadiansAtPeak) {
+      if (radians >= radiansAtPeak && trailingRadians < radiansAtPeak) {
         var maxX = 1
         var minX = Math.min(sin, trailingSin)
 
-      } else if (trailingRadians >= trailingRadiansAtPeak && radians < radiansAtTrough) {
+      } else if (trailingRadians >= radiansAtPeak && radians < radiansAtTrough) {
         var maxX = Math.sin(trailingRadians)
         var minX = Math.sin(radians)
 
-      } else if (radians >= radiansAtTrough && trailingRadians < trailingRadiansAtTrough) {
+      } else if (radians >= radiansAtTrough && trailingRadians < radiansAtTrough) {
         var maxX = Math.max(sin, trailingSin)
         var minX = -1
 
-      } else if ((trailingRadians >= trailingRadiansAtTrough && radians < radiansAtPeak) || radians < radiansAtPeak) {
+      } else if ((trailingRadians >= radiansAtTrough && radians < radiansAtPeak) || radians < radiansAtPeak) {
         var maxX = sin
         var minX = trailingSin
 
@@ -171,6 +169,8 @@ module.exports = library.export(
         // shadow.appendStyles(crescentStyles(data.minX, data.leftHandDx, top, depth, radians))
 
 
+          console.log(oclock, data)
+          debugger
 
           if (data.rightHandDx) {
             crescent.classList.remove("template")
