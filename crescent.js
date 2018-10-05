@@ -63,11 +63,12 @@ module.exports = library.export(
         var maxX = Math.max(sin, trailingSin)
         var minX = -1
 
-      } else if (trailingRadians >= trailingRadiansAtTrough && radians < radiansAtPeak) {
+      } else if ((trailingRadians >= trailingRadiansAtTrough && radians < radiansAtPeak) || radians < radiansAtPeak) {
         var maxX = sin
         var minX = trailingSin
 
       } else {
+        debugger
         throw new Error("mathematically impossible!")
       }
 
@@ -161,40 +162,41 @@ module.exports = library.export(
         function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
 
           var radians = oclock*Math.PI/6
-
-          var x = calculateCrescentScreenX(radians, width)
-          var dx = x[1]
-          var maxX = x[0]
-
-          var remainder = dx - maxX
-
-          if (remainder > 0) {
-            dx = maxX
-          }
-
+          var data = calculateCrescentScreenX(radians, width)
           var crescent = document.querySelector(".crescent-"+name+"")
-
-          var styles = crescentStyles("right", dx, maxX, top, depth, radians)
-
-          crescent.style.left = styles.left
-          crescent.style.top = styles.top
-          crescent.style.transform = styles.transform
-          crescent.style['border-right'] = styles['border-right']
-
           var shadow = document.querySelector(".shadow-"+name+"")
 
-          if (remainder > 0) {
+        // crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians))
+
+        // shadow.appendStyles(crescentStyles(data.minX, data.leftHandDx, top, depth, radians))
+
+
+
+          if (data.rightHandDx) {
+            crescent.classList.remove("template")
+            copyStyles(
+              crescentStyles(data.rightHandDx, data.maxX, top, depth, radians),
+              crescent)
+          } else {
+            crescent.classList.add("template")
+          }
+
+          if (data.leftHandDx) {
             shadow.classList.remove("template")
-            styles = crescentStyles("left", remainder, remainder, top, depth, radians)
-
-            shadow.style.left = styles.left
-            shadow.style.top = styles.top
-            shadow.style.transform = styles.transform
-            shadow.style['border-right'] = styles['border-right']
-
+            copyStyles(
+              crescentStyles(data.minX, data.leftHandDx, top, depth, radians),
+              shadow)
           } else {
             shadow.classList.add("template")
           }
+
+          function copyStyles(styles, node) {
+            node.style.left = styles.left
+            node.style.top = styles.top
+            node.style.transform = styles.transform
+            node.style['border-right'] = styles['border-right']
+          }
+
         }
       )
 
