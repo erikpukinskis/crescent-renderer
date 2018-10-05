@@ -23,9 +23,8 @@ module.exports = library.export(
 
       var crescent = element(".crescent.crescent-"+name)
 
-      var hypotenuse = height
       if (data.rightHandDx > 0) {
-        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians, height))
+        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, data.normal, height))
       } else {
         crescent.addSelector(".template")
       }
@@ -33,7 +32,7 @@ module.exports = library.export(
       var shadow = element(".crescent.shadow-"+name)
 
       if (data.leftHandDx) {
-        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, radians, height))
+        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, data.normal, height))
 
       } else {
         shadow.addSelector(".template")
@@ -50,6 +49,8 @@ module.exports = library.export(
 
       var sin = Math.sin(radians)
       var trailingSin = Math.sin(trailingRadians)
+
+      var normal  = radians - width/2
 
       if (radians >= radiansAtPeak && trailingRadians < radiansAtPeak) {
         var maxX = 1
@@ -73,7 +74,8 @@ module.exports = library.export(
 
       var data = {
         minX: minX,
-        maxX: maxX}
+        maxX: maxX,
+        normal: normal}
 
       if (maxX > 0) {
         if (minX < 0) {
@@ -90,11 +92,11 @@ module.exports = library.export(
       return data
     }
 
-    function crescentStyles(dx, outsideX, top, depth, radians, height) {
+    function crescentStyles(dx, outsideX, top, depth, normal, height) {
 
       var transform
 
-      var specular = (Math.sin((radians+0.5)*2)+1)/2
+      var specular = (Math.sin((normal+0.5)*2)+1)/2
       specular = specular*specular*specular
       var baseColor = [300, 40, 60]
       var color = [300, Math.round(40+40*specular)+"%", Math.round(60+12*specular)+"%"]
@@ -116,12 +118,17 @@ module.exports = library.export(
         transform = (transform||"")+" scale("+depth+")" 
       }
 
-      var left = (outsideX - dx + outsideX*height) * 10 * depth
+      var heightDisplacement = Math.sin(normal)*height * 20
 
+      console.log(heightDisplacement)
+
+      var left = (outsideX - dx) * 10 * depth
 
       if (isLefty) {
         left = -1*left
       }
+
+      left += heightDisplacement
 
       var borderWidth = dx*10/outsideX
 
@@ -172,10 +179,12 @@ module.exports = library.export(
           var crescent = document.querySelector(".crescent-"+options.name+"")
           var shadow = document.querySelector(".shadow-"+options.name+"")
 
+          console.log("---")
+
           if (data.rightHandDx) {
             crescent.classList.remove("template")
             copyStyles(
-              crescentStyles(data.rightHandDx, data.maxX, options.top, options.depth, radians, options.height),
+              crescentStyles(data.rightHandDx, data.maxX, options.top, options.depth, data.normal, options.height),
               crescent)
           } else {
             crescent.classList.add("template")
@@ -184,7 +193,7 @@ module.exports = library.export(
           if (data.leftHandDx) {
             shadow.classList.remove("template")
             copyStyles(
-              crescentStyles(data.leftHandDx, data.minX, options.top, options.depth, radians, options.height),
+              crescentStyles(data.leftHandDx, data.minX, options.top, options.depth, data.normal, options.height),
               shadow)
           } else {
             shadow.classList.add("template")

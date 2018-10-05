@@ -134,6 +134,7 @@ library.using([
 			[updateCrescent, crescents],
 			function(updateCrescent, crescents) {
 
+				var selectedIndex = 0
 				var height = 0.0
 
 				function press(event) {
@@ -154,6 +155,7 @@ library.using([
 					} else if (key == "ArrowDown") {
 						dheight = 0.1
 					} else {
+						console.log("unhandled", key)
 						return
 					}
 
@@ -164,14 +166,11 @@ library.using([
 					var name = "4-oclock"
 
 					crescents.forEach(function(crescent) {
-							debugger
-							crescent.height += dheight
-							crescent.oclock += doclock
-							updateCrescent(crescent)
+						crescent.height += dheight
+						crescent.oclock += doclock
+						updateCrescent(crescent)
 					})
 
-
-					// moveBelly(dtop, doclock)
 				}
 
 				return press})
@@ -184,9 +183,6 @@ library.using([
 		crescents.forEach(function(options) {
       voxel.addChildren(crescent(options))
     })
-
-    debugger
-
 
 		var page = [
 			element(
