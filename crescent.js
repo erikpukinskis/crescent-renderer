@@ -7,12 +7,14 @@ module.exports = library.export(
 
     logFields(["name", "dx", "maxX", "top", "depth", "color"])
 
-    function crescent(name, options) {
+    function crescent(options) {
 
+      var name = options.name
       var depth = options.depth
       var top = options.top
       if (top == null) { top = 0 }
       var width = options.width
+      var height = options.height
       var oclock = options.oclock
       oclock = oclock - parseFloat(Math.floor(oclock/12)*12)
       var radians = oclock*Math.PI/6
@@ -21,9 +23,9 @@ module.exports = library.export(
 
       var crescent = element(".crescent.crescent-"+name)
 
-
+      var hypotenuse = height
       if (data.rightHandDx > 0) {
-        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians))
+        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians, height))
       } else {
         crescent.addSelector(".template")
       }
@@ -31,7 +33,7 @@ module.exports = library.export(
       var shadow = element(".crescent.shadow-"+name)
 
       if (data.leftHandDx) {
-        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, radians))
+        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, radians, height))
 
       } else {
         shadow.addSelector(".template")
@@ -88,7 +90,7 @@ module.exports = library.export(
       return data
     }
 
-    function crescentStyles(dx, outsideX, top, depth, radians) {
+    function crescentStyles(dx, outsideX, top, depth, radians, height) {
 
       var transform
 
@@ -114,7 +116,12 @@ module.exports = library.export(
         transform = (transform||"")+" scale("+depth+")" 
       }
 
-      var left = (isLefty ? -1 : 1) * (outsideX - dx) * 10 * depth
+      var left = (outsideX - dx + outsideX*height) * 10 * depth
+
+
+      if (isLefty) {
+        left = -1*left
+      }
 
       var borderWidth = dx*10/outsideX
 
@@ -156,18 +163,19 @@ module.exports = library.export(
 
       var binding = bridge.defineFunction(
         [calc, styles],
-        function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
+        function updateCrescent(calculateCrescentScreenX, crescentStyles, options) {
 
+          var oclock = options.oclock
           oclock = oclock - parseFloat(Math.floor(oclock/12)*12)
           var radians = oclock*Math.PI/6
-          var data = calculateCrescentScreenX(radians, width)
-          var crescent = document.querySelector(".crescent-"+name+"")
-          var shadow = document.querySelector(".shadow-"+name+"")
+          var data = calculateCrescentScreenX(radians, options.width)
+          var crescent = document.querySelector(".crescent-"+options.name+"")
+          var shadow = document.querySelector(".shadow-"+options.name+"")
 
           if (data.rightHandDx) {
             crescent.classList.remove("template")
             copyStyles(
-              crescentStyles(data.rightHandDx, data.maxX, top, depth, radians),
+              crescentStyles(data.rightHandDx, data.maxX, options.top, options.depth, radians, options.height),
               crescent)
           } else {
             crescent.classList.add("template")
@@ -176,7 +184,7 @@ module.exports = library.export(
           if (data.leftHandDx) {
             shadow.classList.remove("template")
             copyStyles(
-              crescentStyles(data.leftHandDx, data.minX, top, depth, radians),
+              crescentStyles(data.leftHandDx, data.minX, options.top, options.depth, radians, options.height),
               shadow)
           } else {
             shadow.classList.add("template")
@@ -195,12 +203,12 @@ module.exports = library.export(
       return binding
     }
 
-    crescent.testCrescents = [      
+    crescent.clockCrescents = [      
 
       element(
         ".voxel",
-        crescent(
-          "3-oclock",{
+        crescent({
+          "name": "3-oclock",
           "width": Math.PI/2,
           "oclock": 3,
           "depth": 2,
@@ -211,8 +219,8 @@ module.exports = library.export(
 
       element(
         ".voxel",
-        crescent(
-          "4-oclock",{
+        crescent({
+          "name": "4-oclock",
           "width": Math.PI/2,
           "oclock": 4,
           "depth": 2,
@@ -223,8 +231,8 @@ module.exports = library.export(
 
       element(
         ".voxel",
-        crescent(
-          "5-oclock",{
+        crescent({
+          "name": "5-oclock",
           "width": Math.PI/6,
           "oclock": 5,
           "depth": 2,
@@ -235,8 +243,8 @@ module.exports = library.export(
 
       element(
         ".voxel",
-        crescent(
-          "7-oclock",{
+        crescent({
+          "name": "7-oclock",
           "width": Math.PI/3,
           "oclock": 7,
           "depth": 2,
@@ -247,8 +255,8 @@ module.exports = library.export(
 
       element(
         ".voxel",
-        crescent(
-          "9-oclock",{
+        crescent({
+          "name": "9-oclock",
           "width": Math.PI/3,
           "oclock": 9,
           "depth": 2,

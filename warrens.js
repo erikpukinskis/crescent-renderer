@@ -35,6 +35,7 @@ library.using([
 			}),
 			element.style("body", {
 				"font-family": "sans-serif",
+				"margin-left": "200px",
 			}),
 			element.style("h1", {
 				"font-size": "1em",
@@ -100,80 +101,40 @@ library.using([
 				this.addChild(
 					character[name] || name)})
 
-		// var bird = element(
-		// 	".bird",
-		// 	element.style({
-		// 		"position": "absolute",
-		// 		"left": "200px",
-		// 		"top": "100px",
-		// 	}),
-		// 	crescent(
-		// 		"back",{
-		// 		"color": "pink",
-		// 		"belly": 180,
-		// 		"oclock": 6,
-		// 		"depth": 4,
-		// 	}),
-		// 	crescent(
-		// 		"belly",{
-		// 		"color": "palevioletred",
-		// 		"belly": 180,
-		// 		"oclock": 6,
-		// 		"depth": 2,
-		// 		"top": 1,
-		// 	}))
-
-		var feathers = [
-			element(
-				".feather.neck-feather",
-				element(
-					".crescent.feather-top"),
-				element(
-					".crescent.feather-bottom")),
-			element(
-				".feather.belly",
-				element(
-					".crescent.belly"),
-				element(
-					".crescent.feather-bottom")),
-			element(
-				".feather.wing-feather",
-				element(
-					".crescent.feather-top"),
-				element(
-					".crescent.feather-bottom")),
-			element(
-				".feather.back-wing-feather",
-				element(
-					".crescent.feather-top"),
-				element(
-					".crescent.feather-bottom")),
-			element(
-				".feather.tail-feather",
-				element(
-					".crescent.feather-top"),
-				element(
-					".crescent.feather-bottom"))
-		]
-
-
 		var updateCrescent = crescent.defineUpdateOn(bridge)
+
+		var crescents = [
+			{
+	      "name": "wing",
+	      "width": Math.PI/4,
+	      "oclock": 9,
+	      "depth": 2,
+	      "height": 0.5
+	    },
+
+	    {
+	    	"name": "back",
+	      "width": Math.PI/4,
+	      "oclock": 6,
+	      "depth": 2,
+	      "height": 0.5,
+	    },
+
+	    {
+	    	"name": "back-wing",
+	      "width": Math.PI/4,
+	      "oclock": 3.5,
+	      "depth": 2,
+	      "height": 0.5,
+	    }
+	  ]
 
 		var press = bridge.defineSingleton(
 			"press",
-			[updateCrescent],
-			function(updateCrescent) {
+			[updateCrescent, crescents],
+			function(updateCrescent, crescents) {
 
-				var crescents = {
-					"3-oclock": {
-						"top": 1.0,
-						"oclock": 3.0,
-					},
-					"4-oclock": {
-						"top": 1.0,
-						"oclock": 4.0,
-					}
-				}
+				var height = 0.0
 
 				function press(event) {
 					if (typeof event == "string") {
@@ -182,16 +143,16 @@ library.using([
 						var key = event.key
 					}
 
-					var doclock
-					var dtop
+					var doclock = 0
+					var dheight = 0
 					if (key == "ArrowRight") {
 						doclock = 1/10
 					} else if (key == "ArrowLeft") {
 						doclock = -1/10
 					} else if (key == "ArrowUp") {
-						dtop = -1
+						dheight = -0.1
 					} else if (key == "ArrowDown") {
-						dtop = 1
+						dheight = 0.1
 					} else {
 						return
 					}
@@ -202,17 +163,29 @@ library.using([
 
 					var name = "4-oclock"
 
-					var crescent = crescents[name]
-					crescent.oclock += doclock
+					crescents.forEach(function(crescent) {
+							debugger
+							crescent.height += dheight
+							crescent.oclock += doclock
+							updateCrescent(crescent)
+					})
 
-					document.querySelector(".label-"+name).innerText = crescent.oclock.toFixed(2)+" o'clock"
-
-					updateCrescent(name, crescent.oclock, Math.PI/2, 0, 2.0)
 
 					// moveBelly(dtop, doclock)
 				}
 
 				return press})
+
+
+    var voxel = 
+      element(
+        ".voxel")
+
+		crescents.forEach(function(options) {
+      voxel.addChildren(crescent(options))
+    })
+
+    debugger
 
 
 		var page = [
@@ -231,8 +204,7 @@ library.using([
 					"right",{
 					onclick: press.withArgs("ArrowRight").evalable()}),
 				"rotate feather right"),
-			// bird,
-			crescent.testCrescents,
+			voxel,
 		]
 
 		var body = element(
