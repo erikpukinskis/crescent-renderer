@@ -92,10 +92,9 @@ module.exports = library.export(
 
       var transform
 
-      var specular = Math.sin(radians/2-0.2)
-
+      var specular = Math.sin(radians*2+0.5)+1
       var baseColor = [300, 40, 60]
-      var color = [300, Math.round(40+60*specular)+"%", Math.round(60+30*specular)+"%"]
+      var color = [300, Math.round(40+10*specular)+"%", Math.round(60+10*specular)+"%"]
       color = "hsl("+color.join(",")+")"
       var isLefty = dx < 0
 
