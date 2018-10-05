@@ -14,6 +14,7 @@ module.exports = library.export(
       if (top == null) { top = 0 }
       var width = options.width
       var oclock = options.oclock
+      oclock = oclock - parseFloat(Math.floor(oclock/12)*12)
       var radians = oclock*Math.PI/6
 
       var data = calculateCrescentScreenX(radians, width)
@@ -48,8 +49,6 @@ module.exports = library.export(
       var sin = Math.sin(radians)
       var trailingSin = Math.sin(trailingRadians)
 
-
-      debugger
       if (radians >= radiansAtPeak && trailingRadians < radiansAtPeak) {
         var maxX = 1
         var minX = Math.min(sin, trailingSin)
@@ -67,7 +66,6 @@ module.exports = library.export(
         var minX = trailingSin
 
       } else {
-        debugger
         throw new Error("mathematically impossible!")
       }
 
@@ -122,8 +120,6 @@ module.exports = library.export(
 
       transform = (transform||"")+" scaleX("+outsideX+")"
 
-      debugger
-
       return {
         "left": left+"px",
         "border-right": borderWidth+"px solid "+color,
@@ -162,18 +158,11 @@ module.exports = library.export(
         [calc, styles],
         function updateCrescent(calculateCrescentScreenX, crescentStyles, name, oclock, width, top, depth) {
 
+          oclock = oclock - parseFloat(Math.floor(oclock/12)*12)
           var radians = oclock*Math.PI/6
           var data = calculateCrescentScreenX(radians, width)
           var crescent = document.querySelector(".crescent-"+name+"")
           var shadow = document.querySelector(".shadow-"+name+"")
-
-        // crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, radians))
-
-        // shadow.appendStyles(crescentStyles(data.minX, data.leftHandDx, top, depth, radians))
-
-
-          console.log(oclock, data)
-          debugger
 
           if (data.rightHandDx) {
             crescent.classList.remove("template")
