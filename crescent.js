@@ -30,7 +30,7 @@ module.exports = library.export(
       var shadow = element(".crescent.shadow-"+name)
 
       if (data.leftHandDx) {
-        shadow.appendStyles(crescentStyles(data.minX, data.leftHandDx, top, depth, radians))
+        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, radians))
 
       } else {
         shadow.addSelector(".template")
@@ -49,6 +49,7 @@ module.exports = library.export(
       var trailingSin = Math.sin(trailingRadians)
 
 
+      debugger
       if (radians >= radiansAtPeak && trailingRadians < radiansAtPeak) {
         var maxX = 1
         var minX = Math.min(sin, trailingSin)
@@ -89,7 +90,7 @@ module.exports = library.export(
       return data
     }
 
-    function crescentStyles(dx, maxX, top, depth, radians) {
+    function crescentStyles(dx, outsideX, top, depth, radians) {
 
       var transform
 
@@ -97,14 +98,14 @@ module.exports = library.export(
 
       var baseColor = [300, 40, 60]
       var color = [300, Math.round(40+60*specular)+"%", Math.round(60+30*specular)+"%"]
-
       color = "hsl("+color.join(",")+")"
+      var isLefty = dx < 0
 
-      if (dx < 0) {
+      if (isLefty) {
         var flipFactor = -20*depth
         transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
         dx = Math.abs(dx)
-        maxX = Math.abs(maxX)
+        outsideX = Math.abs(outsideX)
       }
 
       if (top) {
@@ -115,11 +116,13 @@ module.exports = library.export(
         transform = (transform||"")+" scale("+depth+")" 
       }
 
-      var left = (maxX - dx)*10*depth
+      var left = (isLefty ? -1 : 1) * (outsideX - dx) * 10 * depth
 
-      var borderWidth = dx*10/maxX
+      var borderWidth = dx*10/outsideX
 
-      transform = (transform||"")+" scaleX("+maxX+")"
+      transform = (transform||"")+" scaleX("+outsideX+")"
+
+      debugger
 
       return {
         "left": left+"px",
@@ -184,7 +187,7 @@ module.exports = library.export(
           if (data.leftHandDx) {
             shadow.classList.remove("template")
             copyStyles(
-              crescentStyles(data.minX, data.leftHandDx, top, depth, radians),
+              crescentStyles(data.leftHandDx, data.minX, top, depth, radians),
               shadow)
           } else {
             shadow.classList.add("template")
@@ -252,6 +255,19 @@ module.exports = library.export(
       element(
         "p",
         "7 o'clock, back two hours"),
+
+      element(
+        ".voxel",
+        crescent(
+          "9-oclock",{
+          "width": Math.PI/3,
+          "oclock": 9,
+          "depth": 2,
+        })),
+      element(
+        "p.label-4-oclock",
+        "9 o'clock, back 2 hours"),
+
     ]
 
 
