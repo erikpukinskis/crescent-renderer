@@ -11,8 +11,6 @@ module.exports = library.export(
 
       var name = options.name
       var depth = options.depth
-      var top = options.top
-      if (top == null) { top = 0 }
       var width = options.width
       var height = options.height
       var oclock = options.oclock
@@ -24,7 +22,7 @@ module.exports = library.export(
       var crescent = element(".crescent.crescent-"+name)
 
       if (data.rightHandDx > 0) {
-        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, top, depth, data.normal, height))
+        crescent.appendStyles(crescentStyles(data.rightHandDx, data.maxX, options, data.normal))
       } else {
         crescent.addSelector(".template")
       }
@@ -32,7 +30,7 @@ module.exports = library.export(
       var shadow = element(".crescent.shadow-"+name)
 
       if (data.leftHandDx) {
-        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, top, depth, data.normal, height))
+        shadow.appendStyles(crescentStyles(data.leftHandDx, data.minX, options, data.normal))
 
       } else {
         shadow.addSelector(".template")
@@ -96,9 +94,12 @@ module.exports = library.export(
       return data
     }
 
-    function crescentStyles(dx, outsideX, top, depth, normal, height) {
+    function crescentStyles(dx, outsideX, options, normal) {
 
       var transform
+      var top = options.top
+      var height = options.height
+      var depth = options.depth
 
       var specular = (Math.sin((normal+0.5)*2)+1)/2
       specular = specular*specular*specular
@@ -184,7 +185,7 @@ module.exports = library.export(
           if (data.rightHandDx) {
             crescent.classList.remove("template")
             copyStyles(
-              crescentStyles(data.rightHandDx, data.maxX, options.top, options.depth, data.normal, options.height),
+              crescentStyles(data.rightHandDx, data.maxX, options, data.normal),
               crescent)
           } else {
             crescent.classList.add("template")
@@ -193,7 +194,7 @@ module.exports = library.export(
           if (data.leftHandDx) {
             shadow.classList.remove("template")
             copyStyles(
-              crescentStyles(data.leftHandDx, data.minX, options.top, options.depth, data.normal, options.height),
+              crescentStyles(data.leftHandDx, data.minX, options, data.normal),
               shadow)
           } else {
             shadow.classList.add("template")

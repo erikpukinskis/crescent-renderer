@@ -54,6 +54,12 @@ library.using([
 
 
 		var stylesheet = element.stylesheet([
+			element.style(".mode", {
+				"text-transform	": "uppercase",
+				"font-weight": "bold",
+				"color": "#555",
+				"font-size": "0.5em",
+			}),
 			element.style(".crescent.template", {
 				"display": "none",
 			}),
@@ -122,7 +128,8 @@ library.using([
 	      "width": Math.PI/4,
 	      "oclock": 9,
 	      "depth": 2,
-	      "height": 0.5
+	      "height": 0.5,
+	      "top": 0,
 	    },
 
 	    {
@@ -131,6 +138,7 @@ library.using([
 	      "oclock": 6,
 	      "depth": 2,
 	      "height": 0.5,
+	      "top": 0,
 	    },
 
 	    {
@@ -139,6 +147,7 @@ library.using([
 	      "oclock": 3.5,
 	      "depth": 2,
 	      "height": 0.5,
+	      "top": 0,
 	    }
 	  ]
 
@@ -171,7 +180,7 @@ library.using([
 
 					if (mode == 0) {
 
-						// planar
+						// planar mode
 
 						if (key == "ArrowRight") {
 							doclock = 1/10
@@ -187,14 +196,16 @@ library.using([
 
 					} else {
 
+						// trunk mode
+
 						if (key == "ArrowRight") {
 							dcurl = 1/10
 						} else if (key == "ArrowLeft") {
 							dcurl = -1/10
 						} else if (key == "ArrowUp") {
-							dtop = -0.1
-						} else if (key == "ArrowDown") {
 							dtop = 0.1
+						} else if (key == "ArrowDown") {
+							dtop = -0.1
 						} else {
 							didPressArrow = false
 						}
@@ -213,16 +224,19 @@ library.using([
 						if (mode > 1) {
 							mode = 0
 						}
+						document.querySelector(".mode").innerText = mode == 0 ? "Planar Mode" : "Trunk Mode"
 						event.preventDefault()
 
 					} else if (didPressArrow) {
 						var name = "4-oclock"
 						var crescent = crescents[selectedIndex]
 
+
 						crescent.height += dheight
 						crescent.oclock += doclock
 						crescent.curl += dcurl
 						crescent.top += dtop
+						console.log(crescent)
 						updateCrescent(crescent)
 						event.preventDefault()
 
@@ -247,6 +261,7 @@ library.using([
 				"h1",
 				"feathers!"),
 			voxel,
+			element("p.mode", "Planar Mode"),
 			element(
 				"p",
 				key(
