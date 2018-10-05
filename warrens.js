@@ -12,27 +12,52 @@ library.using([
 
 		crescent.addTo(bridge)
 		
-		var stylesheet = element.stylesheet([
-			element.style(".crescent.template", {
-				"display": "none",
-			}),
-			element.style(".key", {
+		var key = element.template(
+			"span.key",
+				element.style(".key", {
+				"cursor": "pointer",
 				"background": "#223",
 				"border-radius": "3px",
 				"display": "inline-block",
-				"width": "4em",
-				"height": "2.5em",
+				"width": "32px",
+				"height": "16px",
 				"text-align": "center",
 				"color": "#eff",
-				"line-height": "2.8em",
-				"font-size": "8px",
+				"line-height": "16px",
+				"font-size": "6px",
 				"border-top": "2px solid #667",
 				"border-left": "1px solid black",
 				"border-bottom": "2px solid black",
 				"border-right": "1px solid #446",
 				"vertical-align": "middle",
 				"margin-right": "1em",
+
+				".key-text": {
+					"font-size": "12px",
+					"height": "28px",
+					"line-height": "28px",
+				}
 			}),
+			function(name, attributes) {
+				this.addAttributes(attributes)
+				var character = {
+					"left": "&#9664;",
+					"up": "&#9650;",
+					"down": "&#9660;",
+					"right": "&#9654;"}[name]
+
+				if (!character) {
+					this.addSelector(".key-text")
+				}
+				this.addChild(character || name)
+			})
+
+
+		var stylesheet = element.stylesheet([
+			element.style(".crescent.template", {
+				"display": "none",
+			}),
+			key,
 			element.style("body", {
 				"font-family": "sans-serif",
 				"margin-left": "200px",
@@ -89,18 +114,6 @@ library.using([
 
 		bridge.addToHead(stylesheet)
 
-		var key = element.template(
-			"span.key",
-			function(name, attributes) {
-				this.addAttributes(attributes)
-				var character = {
-					"left": "&#9664;",
-					"up": "&#9650;",
-					"down": "&#9660;",
-					"right": "&#9654;"}
-				this.addChild(
-					character[name] || name)})
-
 		var updateCrescent = crescent.defineUpdateOn(bridge)
 
 		var crescents = [
@@ -136,6 +149,7 @@ library.using([
 
 				var selectedIndex = 0
 				var height = 0.0
+				var mode = 0
 
 				function press(event) {
 					if (typeof event == "string") {
@@ -144,33 +158,77 @@ library.using([
 						var key = event.key
 					}
 
+					if (!event.preventDefault) {
+						event.preventDefault = function(){}
+					}
+
 					var doclock = 0
 					var dheight = 0
-					if (key == "ArrowRight") {
-						doclock = 1/10
-					} else if (key == "ArrowLeft") {
-						doclock = -1/10
-					} else if (key == "ArrowUp") {
-						dheight = -0.1
-					} else if (key == "ArrowDown") {
-						dheight = 0.1
+					var dcurl = 0
+					var dtop = 0
+
+					var didPressArrow = true
+
+					if (mode == 0) {
+
+						// planar
+
+						if (key == "ArrowRight") {
+							doclock = 1/10
+						} else if (key == "ArrowLeft") {
+							doclock = -1/10
+						} else if (key == "ArrowUp") {
+							dheight = -0.1
+						} else if (key == "ArrowDown") {
+							dheight = 0.1
+						} else {
+							didPressArrow = false
+						}
+
 					} else {
-						console.log("unhandled", key)
-						return
+
+						if (key == "ArrowRight") {
+							dcurl = 1/10
+						} else if (key == "ArrowLeft") {
+							dcurl = -1/10
+						} else if (key == "ArrowUp") {
+							dtop = -0.1
+						} else if (key == "ArrowDown") {
+							dtop = 0.1
+						} else {
+							didPressArrow = false
+						}
+
 					}
 
-					if (doclock && event.preventDefault) {
+					if (key == "Tab") {
+						selectedIndex++
+						if (selectedIndex == crescents.length) {
+							selectedIndex = 0
+						}
 						event.preventDefault()
-					}
+	
+					} else if (key == "m") {
+						mode++
+						if (mode > 1) {
+							mode = 0
+						}
+						event.preventDefault()
 
-					var name = "4-oclock"
+					} else if (didPressArrow) {
+						var name = "4-oclock"
+						var crescent = crescents[selectedIndex]
 
-					crescents.forEach(function(crescent) {
 						crescent.height += dheight
 						crescent.oclock += doclock
+						crescent.curl += dcurl
+						crescent.top += dtop
 						updateCrescent(crescent)
-					})
+						event.preventDefault()
 
+					} else {
+						console.log("unhandled", key)
+					}
 				}
 
 				return press})
@@ -188,19 +246,37 @@ library.using([
 			element(
 				"h1",
 				"feathers!"),
+			voxel,
+			element(
+				"p",
+				key(
+					"M",{
+					onclick: press.withArgs("o").evalable()}),
+				"change mode"),
 			element(
 				"p",
 				key(
 					"left",{
 					onclick: press.withArgs("ArrowLeft").evalable()}),
-				"rotate feather left"),
+				"rotate feathers left"),
 			element(
 				"p",
 				key(
 					"right",{
 					onclick: press.withArgs("ArrowRight").evalable()}),
-				"rotate feather right"),
-			voxel,
+				"rotate feathers right"),
+			element(
+				"p",
+				key(
+					"up",{
+					onclick: press.withArgs("ArrowUp").evalable()}),
+				"press feathers in"),
+			element(
+				"p",
+				key(
+					"down",{
+					onclick: press.withArgs("ArrowDown").evalable()}),
+				"fluff feathers out"),
 		]
 
 		var body = element(

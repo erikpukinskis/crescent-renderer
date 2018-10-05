@@ -64,7 +64,11 @@ module.exports = library.export(
         var maxX = Math.max(sin, trailingSin)
         var minX = -1
 
-      } else if ((trailingRadians >= radiansAtTrough && radians < radiansAtPeak) || radians < radiansAtPeak) {
+      } else if (radians >= radiansAtTrough && trailingRadians >= radiansAtTrough) {
+        var maxX = sin
+        var minX = trailingSin
+
+      } else if (radians < radiansAtPeak && trailingRadians < radiansAtTrough) {
         var maxX = sin
         var minX = trailingSin
 
@@ -119,8 +123,6 @@ module.exports = library.export(
       }
 
       var heightDisplacement = Math.sin(normal)*height * 20
-
-      console.log(heightDisplacement)
 
       var left = (outsideX - dx) * 10 * depth
 
@@ -178,8 +180,6 @@ module.exports = library.export(
           var data = calculateCrescentScreenX(radians, options.width)
           var crescent = document.querySelector(".crescent-"+options.name+"")
           var shadow = document.querySelector(".shadow-"+options.name+"")
-
-          console.log("---")
 
           if (data.rightHandDx) {
             crescent.classList.remove("template")
