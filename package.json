@@ -1,8 +1,8 @@
 {
   "dependencies": {
+    "browser-bridge": "*",
     "module-library": "*",
-    "web-site": "*",
-    "web-element": "*",
-    "browser-bridge": "*"
+    "web-element": "^0.102.0",
+    "web-site": "*"
   }
 }

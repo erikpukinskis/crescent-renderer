@@ -12,9 +12,9 @@ library.using([
 
 		crescent.addTo(bridge)
 		
-		var key = element.template(
-			"span.key",
-				element.style(".key", {
+		var keyboardKey = element.template(
+			"span.keyboard-key",
+				element.style({
 				"cursor": "pointer",
 				"background": "#223",
 				"border-radius": "3px",
@@ -30,40 +30,47 @@ library.using([
 				"border-bottom": "2px solid black",
 				"border-right": "1px solid #446",
 				"vertical-align": "middle",
-				"margin-right": "1em",
+				"margin-right": "16px",
 
 				".key-text": {
-					"font-size": "12px",
+					"font-family": "Trebuchet MS",
+					"font-size": "14px",
 					"height": "28px",
 					"line-height": "28px",
+					"margin-top": "-6px",
+					"margin-bottom": "-6px",
 				}
 			}),
-			function(name, attributes) {
+			function(key, attributes) {
 				this.addAttributes(attributes)
 				var character = {
-					"left": "&#9664;",
-					"up": "&#9650;",
-					"down": "&#9660;",
-					"right": "&#9654;"}[name]
+					"ArrowLeft": "&#9664;",
+					"ArrowUp": "&#9650;",
+					"ArrowDown": "&#9660;",
+					"ArrowRight": "&#9654;"}[key]
 
 				if (!character) {
 					this.addSelector(".key-text")
 				}
-				this.addChild(character || name)
+				this.addChild(character || key)
 			})
 
 
 		var stylesheet = element.stylesheet([
+			keyboardKey,
 			element.style(".mode", {
 				"text-transform	": "uppercase",
 				"font-weight": "bold",
 				"color": "#555",
 				"font-size": "0.5em",
+				"width": "5em",
+				"text-align": "center",
+				"border": "2px solid #555",
+				"border-radius": "2px",
 			}),
 			element.style(".crescent.template", {
 				"display": "none",
 			}),
-			key,
 			element.style("body", {
 				"font-family": "sans-serif",
 				"margin-left": "200px",
@@ -130,6 +137,7 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
+	      "curl": 0,
 	    },
 
 	    {
@@ -139,6 +147,7 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
+	      "curl": 0,
 	    },
 
 	    {
@@ -148,13 +157,29 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
+	      "curl": 0,
 	    }
 	  ]
 
+		var keys = {
+			0: [
+				["ArrowLeft", "rotate feathers left"],
+				["ArrowRight", "rotate feathers right"],
+				["ArrowUp", "press feathers in"],
+				["ArrowDown", "fluff feathers out"],
+			],
+			1: [
+				["ArrowLeft", "tilt feathers out"],
+				["ArrowRight", "tilt feathers in"],
+				["ArrowUp", "slide feathers up"],
+				["ArrowDown", "slide feathers down"],
+			],
+		}
+
 		var press = bridge.defineSingleton(
 			"press",
-			[updateCrescent, crescents],
-			function(updateCrescent, crescents) {
+			[keys, crescents, updateCrescent],
+			function(keys, crescents, updateCrescent) {
 
 				var selectedIndex = 0
 				var height = 0.0
@@ -203,9 +228,9 @@ library.using([
 						} else if (key == "ArrowLeft") {
 							dcurl = -1/10
 						} else if (key == "ArrowUp") {
-							dtop = 0.1
-						} else if (key == "ArrowDown") {
 							dtop = -0.1
+						} else if (key == "ArrowDown") {
+							dtop = 0.1
 						} else {
 							didPressArrow = false
 						}
@@ -224,6 +249,11 @@ library.using([
 						if (mode > 1) {
 							mode = 0
 						}
+						keys[mode].forEach(function(args, i) {
+							var label = document.querySelector('.mode-result-'+i)
+							label.innerText = args[1]
+						})
+
 						document.querySelector(".mode").innerText = mode == 0 ? "Planar Mode" : "Trunk Mode"
 						event.preventDefault()
 
@@ -256,42 +286,41 @@ library.using([
       voxel.addChildren(crescent(options))
     })
 
+		var mode = 0
+
+		var keyMapEntry = element.template(
+			"p",
+			function (key, describeTheResult, index) {
+				this.addChild(
+					keyboardKey(
+						key,{
+						"onclick": press.withArgs(key).evalable()})
+				)
+				this.addChild(
+					element(
+						"span.mode-result-"+index,
+						describeTheResult))
+			})
+
+		var keyMap = element(
+			element(
+				"p",
+				keyboardKey(
+					"M",{
+					onclick: press.withArgs("o").evalable()}),
+				"change mode"),
+			keys[mode].map(function(args, i) {
+				return keyMapEntry(args[0], args[1], i)
+			})
+		)
+
 		var page = [
 			element(
 				"h1",
 				"feathers!"),
 			voxel,
 			element("p.mode", "Planar Mode"),
-			element(
-				"p",
-				key(
-					"M",{
-					onclick: press.withArgs("o").evalable()}),
-				"change mode"),
-			element(
-				"p",
-				key(
-					"left",{
-					onclick: press.withArgs("ArrowLeft").evalable()}),
-				"rotate feathers left"),
-			element(
-				"p",
-				key(
-					"right",{
-					onclick: press.withArgs("ArrowRight").evalable()}),
-				"rotate feathers right"),
-			element(
-				"p",
-				key(
-					"up",{
-					onclick: press.withArgs("ArrowUp").evalable()}),
-				"press feathers in"),
-			element(
-				"p",
-				key(
-					"down",{
-					onclick: press.withArgs("ArrowDown").evalable()}),
-				"fluff feathers out"),
+			keyMap,
 		]
 
 		var body = element(

@@ -100,6 +100,7 @@ module.exports = library.export(
       var top = options.top
       var height = options.height
       var depth = options.depth
+      var curl = options.curl
 
       var specular = (Math.sin((normal+0.5)*2)+1)/2
       specular = specular*specular*specular
@@ -113,6 +114,9 @@ module.exports = library.export(
         transform = (transform||"")+" rotate(180deg) translateY("+flipFactor+"px) "
         dx = Math.abs(dx)
         outsideX = Math.abs(outsideX)
+        if (top) {
+          top = -top
+        }
       }
 
       if (top) {
@@ -136,6 +140,11 @@ module.exports = library.export(
       var borderWidth = dx*10/outsideX
 
       transform = (transform||"")+" scaleX("+outsideX+")"
+
+      if (curl) {
+        transform = transform || ""
+        transform += " rotate("+curl+"rad)"
+      }
 
       return {
         "left": left+"px",
