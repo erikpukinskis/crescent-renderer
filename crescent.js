@@ -119,10 +119,6 @@ module.exports = library.export(
         }
       }
 
-      if (top) {
-        transform = (transform||"")+" translateY("+top*20+"px)" 
-      }
-
       if (depth) {
         transform = (transform||"")+" scale("+depth+")" 
       }
@@ -148,6 +144,7 @@ module.exports = library.export(
 
       return {
         "left": left+"px",
+        "top": top*20+"px",
         "border-right": borderWidth+"px solid "+color,
         "transform": transform
       }
@@ -222,7 +219,7 @@ module.exports = library.export(
       return binding
     }
 
-    crescent.clockCrescents = [      
+    crescent.curlCrescents = [      
 
       element(
         ".voxel",
@@ -236,6 +233,24 @@ module.exports = library.export(
         "p",
         "3 o'clock, back 3 hours"),
 
+    ]
+
+    crescent.clockCrescents = [      
+
+      element(
+        ".voxel",
+        crescent({
+          "name": "3-oclock",
+          "width": Math.PI/2,
+          "oclock": 3,
+          "depth": 2,
+          "height": 0,
+          "curl": 0,
+        })),
+      element(
+        "p",
+        "3 o'clock, back 3 hours"),
+
       element(
         ".voxel",
         crescent({
@@ -243,6 +258,8 @@ module.exports = library.export(
           "width": Math.PI/2,
           "oclock": 4,
           "depth": 2,
+          "height": 0,
+          "curl": 0,
         })),
       element(
         "p.label-4-oclock",
@@ -255,6 +272,8 @@ module.exports = library.export(
           "width": Math.PI/6,
           "oclock": 5,
           "depth": 2,
+          "height": 0,
+          "curl": 0,
         })),
       element(
         "p",
@@ -267,6 +286,8 @@ module.exports = library.export(
           "width": Math.PI/3,
           "oclock": 7,
           "depth": 2,
+          "height": 0,
+          "curl": 0,
         })),
       element(
         "p",
@@ -279,6 +300,8 @@ module.exports = library.export(
           "width": Math.PI/3,
           "oclock": 9,
           "depth": 2,
+          "height": 0,
+          "curl": 0,
         })),
       element(
         "p.label-4-oclock",

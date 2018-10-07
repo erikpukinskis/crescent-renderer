@@ -262,12 +262,15 @@ library.using([
 						var crescent = crescents[selectedIndex]
 
 
-						crescent.height += dheight
-						crescent.oclock += doclock
-						crescent.curl += dcurl
-						crescent.top += dtop
-						console.log(crescent)
-						updateCrescent(crescent)
+						crescents.forEach(function(crescent) {
+							crescent.height += dheight
+							crescent.oclock += doclock
+							crescent.curl += dcurl
+							crescent.top += dtop
+							console.log(crescent)
+							updateCrescent(crescent)
+						})
+
 						event.preventDefault()
 
 					} else {
@@ -318,9 +321,9 @@ library.using([
 			element(
 				"h1",
 				"feathers!"),
-			voxel,
-			element("p.mode", "Planar Mode"),
-			keyMap,
+			crescent.clockCrescents,
+			// element("p.mode", "Planar Mode"),
+			// keyMap,
 		]
 
 		var body = element(
