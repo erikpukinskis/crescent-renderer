@@ -219,23 +219,6 @@ module.exports = library.export(
       return binding
     }
 
-    crescent.curlCrescents = [      
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "3-oclock",
-          "width": Math.PI/2,
-          "oclock": 3,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p",
-        "3 o'clock"),
-    ]
-
     crescent.clockCrescents = [
       {
         "name": "3-oclock",
@@ -244,21 +227,24 @@ module.exports = library.export(
         "depth": 2,
         "height": 0,
         "curl": 0,
-      },{
+      },
+      {
         "name": "4-oclock",
         "width": Math.PI/2,
         "oclock": 4,
         "depth": 2,
         "height": 0,
         "curl": 0,
-      },{
+      },
+      {
         "name": "5-oclock",
         "width": Math.PI/6,
         "oclock": 5,
         "depth": 2,
         "height": 0,
         "curl": 0,
-      },{
+      },
+      {
         "name": "7-oclock",
         "width": Math.PI/3,
         "oclock": 7,
@@ -276,6 +262,75 @@ module.exports = library.export(
       },
     ]
 
+    crescent.liftCrescents = [
+      // 4 o'clock
+      {
+        "name": "4-oclock-down",
+        "width": Math.PI/3,
+        "oclock": 4,
+        "depth": 2,
+        "height": 0,
+        "lift": 0,
+      },
+      {
+        "name": "4-oclock-just-up",
+        "width": Math.PI/3,
+        "oclock": 4,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI/6,
+      },
+      {
+        "name": "4-oclock-almost-up",
+        "width": Math.PI/3,
+        "oclock": 4,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI/2,
+      },
+      {
+        "name": "4-oclock-up-and-over",
+        "width": Math.PI/3,
+        "oclock": 4,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI*2/3,
+      },
+
+      // 7 o'clock
+      {
+        "name": "7-oclock-down",
+        "width": Math.PI/3,
+        "oclock": 7,
+        "depth": 2,
+        "height": 0,
+        "lift": 0,
+      },
+      {
+        "name": "7-oclock-just-up",
+        "width": Math.PI/3,
+        "oclock": 7,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI/6,
+      },
+      {
+        "name": "7-oclock-almost-up",
+        "width": Math.PI/3,
+        "oclock": 7,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI/2,
+      },
+      {
+        "name": "7-oclock-up-and-over",
+        "width": Math.PI/3,
+        "oclock": 7,
+        "depth": 2,
+        "height": 0,
+        "lift": Math.PI*2/3,
+      },
+    ]
 
     function logFields(values) {
       var out = ""
