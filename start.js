@@ -163,7 +163,10 @@ library.using([
 	    }
 	  ]
 
-	  var crescents = crescent.clockCrescents
+	  // var crescents = crescent.clockCrescents
+	  var crescents = birdCrescents
+
+		var ONE_VOXEL_PER = false
 
 		var keys = {
 			0: [
@@ -285,12 +288,16 @@ library.using([
 				return press})
 
 
-		var voxels = crescents.map(
-			function(options) {
-				return element(
-        	".voxel",
-        	crescent(
-        		options))})
+		var crescentElements = crescents.map(crescent)
+		if (ONE_VOXEL_PER) {
+			var voxels = crescentElements.map(
+				element.template(
+					".voxel"))
+		} else {
+			var voxels = element(
+				".voxel",
+				crescentElements)
+		}
 
 		var mode = 0
 

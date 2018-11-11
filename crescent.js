@@ -71,7 +71,6 @@ module.exports = library.export(
         var minX = trailingSin
 
       } else {
-        debugger
         throw new Error("mathematically impossible!")
       }
 
