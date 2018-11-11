@@ -1,5 +1,7 @@
 var library = require("module-library")(require)
 
+// flowers look like this: https://youtu.be/GbWMw249xY8?t=496
+
 library.using([
 	"browser-bridge",
 	"web-site",
@@ -129,7 +131,7 @@ library.using([
 
 		var updateCrescent = crescent.defineUpdateOn(bridge)
 
-		var crescents = [
+		var birdCrescents = [
 			{
 	      "name": "wing",
 	      "width": Math.PI/4,
@@ -160,6 +162,8 @@ library.using([
 	      "curl": 0,
 	    }
 	  ]
+
+	  var crescents = crescent.clockCrescents
 
 		var keys = {
 			0: [
@@ -281,13 +285,12 @@ library.using([
 				return press})
 
 
-    var voxel = 
-      element(
-        ".voxel")
-
-		crescents.forEach(function(options) {
-      voxel.addChildren(crescent(options))
-    })
+		var voxels = crescents.map(
+			function(options) {
+				return element(
+        	".voxel",
+        	crescent(
+        		options))})
 
 		var mode = 0
 
@@ -321,7 +324,7 @@ library.using([
 			element(
 				"h1",
 				"feathers!"),
-			crescent.clockCrescents,
+			voxels,
 			// element("p.mode", "Planar Mode"),
 			// keyMap,
 		]

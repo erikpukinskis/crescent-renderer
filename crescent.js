@@ -71,6 +71,7 @@ module.exports = library.export(
         var minX = trailingSin
 
       } else {
+        debugger
         throw new Error("mathematically impossible!")
       }
 
@@ -228,85 +229,52 @@ module.exports = library.export(
           "width": Math.PI/2,
           "oclock": 3,
           "depth": 2,
+          "height": 0,
+          "curl": 0,
         })),
       element(
         "p",
-        "3 o'clock, back 3 hours"),
-
+        "3 o'clock"),
     ]
 
-    crescent.clockCrescents = [      
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "3-oclock",
-          "width": Math.PI/2,
-          "oclock": 3,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p",
-        "3 o'clock, back 3 hours"),
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "4-oclock",
-          "width": Math.PI/2,
-          "oclock": 4,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p.label-4-oclock",
-        "4 o'clock, back 3 hours"),
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "5-oclock",
-          "width": Math.PI/6,
-          "oclock": 5,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p",
-        "5 o'clock, back 1 hour"),
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "7-oclock",
-          "width": Math.PI/3,
-          "oclock": 7,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p",
-        "7 o'clock, back two hours"),
-
-      element(
-        ".voxel",
-        crescent({
-          "name": "9-oclock",
-          "width": Math.PI/3,
-          "oclock": 9,
-          "depth": 2,
-          "height": 0,
-          "curl": 0,
-        })),
-      element(
-        "p.label-4-oclock",
-        "9 o'clock, back 2 hours"),
-
+    crescent.clockCrescents = [
+      {
+        "name": "3-oclock",
+        "width": Math.PI/2,
+        "oclock": 3,
+        "depth": 2,
+        "height": 0,
+        "curl": 0,
+      },{
+        "name": "4-oclock",
+        "width": Math.PI/2,
+        "oclock": 4,
+        "depth": 2,
+        "height": 0,
+        "curl": 0,
+      },{
+        "name": "5-oclock",
+        "width": Math.PI/6,
+        "oclock": 5,
+        "depth": 2,
+        "height": 0,
+        "curl": 0,
+      },{
+        "name": "7-oclock",
+        "width": Math.PI/3,
+        "oclock": 7,
+        "depth": 2,
+        "height": 0,
+        "curl": 0,
+      },
+      {
+        "name": "9-oclock",
+        "width": Math.PI/3,
+        "oclock": 9,
+        "depth": 2,
+        "height": 0,
+        "curl": 0,
+      },
     ]
 
 
