@@ -1,1 +1,1 @@
-![Lossy GIF of chickens](chickens-high-def.gif?foo)
+![Lossy GIF of chickens](chickens-hi-def.gif)
