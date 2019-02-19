@@ -12,4 +12,4 @@ pain and effort
 passing    
 at the mercy of the elemental forces of the world    
 
-![Lossy GIF of chickens](chickens-hi-def.gif)
+![Lossy GIF of chickens](chickens-lossy.gif)
