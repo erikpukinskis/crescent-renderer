@@ -139,7 +139,7 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
-	      "curl": 0,
+	      "lift": 0,
 	    },
 
 	    {
@@ -149,7 +149,7 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
-	      "curl": 0,
+	      "lift": 0,
 	    },
 
 	    {
@@ -159,7 +159,7 @@ library.using([
 	      "depth": 2,
 	      "height": 0.5,
 	      "top": 0,
-	      "curl": 0,
+	      "lift": 0,
 	    }
 	  ]
 
@@ -191,7 +191,7 @@ library.using([
 
 				var selectedIndex = 0
 				var height = 0.0
-				var mode = 0
+				var mode = 1
 
 				function press(event) {
 					if (typeof event == "string") {
@@ -206,7 +206,7 @@ library.using([
 
 					var doclock = 0
 					var dheight = 0
-					var dcurl = 0
+					var dlift = 0
 					var dtop = 0
 
 					var didPressArrow = true
@@ -232,9 +232,9 @@ library.using([
 						// trunk mode
 
 						if (key == "ArrowRight") {
-							dcurl = 1/10
+							dlift = 1/10
 						} else if (key == "ArrowLeft") {
-							dcurl = -1/10
+							dlift = -1/10
 						} else if (key == "ArrowUp") {
 							dtop = -0.1
 						} else if (key == "ArrowDown") {
@@ -273,7 +273,7 @@ library.using([
 						crescents.forEach(function(crescent) {
 							crescent.height += dheight
 							crescent.oclock += doclock
-							crescent.curl += dcurl
+							crescent.lift += dlift
 							crescent.top += dtop
 							console.log(crescent)
 							updateCrescent(crescent)
@@ -302,7 +302,7 @@ library.using([
 				crescentElements)
 		}
 
-		var mode = 0
+		var mode = 1
 
 		var keyMapEntry = element.template(
 			"p",
@@ -335,8 +335,8 @@ library.using([
 				"h1",
 				"feathers!"),
 			voxels,
-			// element("p.mode", "Planar Mode"),
-			// keyMap,
+			element("p.mode", "Planar Mode"),
+			keyMap,
 		]
 
 		var body = element(

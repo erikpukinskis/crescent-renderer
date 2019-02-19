@@ -36,7 +36,10 @@ module.exports = library.export(
         shadow.addSelector(".template")
       }
 
-      return [crescent, shadow]
+      return element(
+        ".lune",
+        crescent,
+        shadow)
     }
 
     function calculateCrescentScreenX(radians, width) {
@@ -100,7 +103,7 @@ module.exports = library.export(
       var top = options.top
       var height = options.height
       var depth = options.depth
-      var curl = options.curl
+      var lift = options.lift
 
       var specular = (Math.sin((normal+0.5)*2)+1)/2
       specular = specular*specular*specular
@@ -137,10 +140,11 @@ module.exports = library.export(
 
       transform = (transform||"")+" scaleX("+outsideX+")"
 
-      if (curl) {
-        transform = transform || ""
-        transform += " rotate("+curl+"rad)"
-      }
+      var alpha = 90 - options.lift
+      var c = Math.sin(90 - alpha)
+      var drop = Math.sqrt(4 - 4*c*c)
+      var peak = 1 - Math.sqrt(1 - c*c)
+      var scaleY = drop
 
       return {
         "left": left+"px",
@@ -226,7 +230,7 @@ module.exports = library.export(
         "oclock": 3,
         "depth": 2,
         "height": 0,
-        "curl": 0,
+        "lift": 0,
       },
       {
         "name": "4-oclock",
@@ -234,7 +238,7 @@ module.exports = library.export(
         "oclock": 4,
         "depth": 2,
         "height": 0,
-        "curl": 0,
+        "lift": 0,
       },
       {
         "name": "5-oclock",
@@ -242,7 +246,7 @@ module.exports = library.export(
         "oclock": 5,
         "depth": 2,
         "height": 0,
-        "curl": 0,
+        "lift": 0,
       },
       {
         "name": "7-oclock",
@@ -250,7 +254,7 @@ module.exports = library.export(
         "oclock": 7,
         "depth": 2,
         "height": 0,
-        "curl": 0,
+        "lift": 0,
       },
       {
         "name": "9-oclock",
@@ -258,7 +262,7 @@ module.exports = library.export(
         "oclock": 9,
         "depth": 2,
         "height": 0,
-        "curl": 0,
+        "lift": 0,
       },
     ]
 
@@ -272,30 +276,30 @@ module.exports = library.export(
         "height": 0,
         "lift": 0,
       },
-      {
-        "name": "4-oclock-just-up",
-        "width": Math.PI/3,
-        "oclock": 4,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI/6,
-      },
-      {
-        "name": "4-oclock-almost-up",
-        "width": Math.PI/3,
-        "oclock": 4,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI/2,
-      },
-      {
-        "name": "4-oclock-up-and-over",
-        "width": Math.PI/3,
-        "oclock": 4,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI*2/3,
-      },
+      // {
+      //   "name": "4-oclock-just-up",
+      //   "width": Math.PI/3,
+      //   "oclock": 4,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI/6,
+      // },
+      // {
+      //   "name": "4-oclock-almost-up",
+      //   "width": Math.PI/3,
+      //   "oclock": 4,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI/2,
+      // },
+      // {
+      //   "name": "4-oclock-up-and-over",
+      //   "width": Math.PI/3,
+      //   "oclock": 4,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI*2/3,
+      // },
 
       // 7 o'clock
       {
@@ -306,30 +310,30 @@ module.exports = library.export(
         "height": 0,
         "lift": 0,
       },
-      {
-        "name": "7-oclock-just-up",
-        "width": Math.PI/3,
-        "oclock": 7,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI/6,
-      },
-      {
-        "name": "7-oclock-almost-up",
-        "width": Math.PI/3,
-        "oclock": 7,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI/2,
-      },
-      {
-        "name": "7-oclock-up-and-over",
-        "width": Math.PI/3,
-        "oclock": 7,
-        "depth": 2,
-        "height": 0,
-        "lift": Math.PI*2/3,
-      },
+      // {
+      //   "name": "7-oclock-just-up",
+      //   "width": Math.PI/3,
+      //   "oclock": 7,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI/6,
+      // },
+      // {
+      //   "name": "7-oclock-almost-up",
+      //   "width": Math.PI/3,
+      //   "oclock": 7,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI/2,
+      // },
+      // {
+      //   "name": "7-oclock-up-and-over",
+      //   "width": Math.PI/3,
+      //   "oclock": 7,
+      //   "depth": 2,
+      //   "height": 0,
+      //   "lift": Math.PI*2/3,
+      // },
     ]
 
     function logFields(values) {
