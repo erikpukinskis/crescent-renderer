@@ -1,1 +1,1 @@
-![chicken lossy.gif](Lossy GIF of chickens)
+![Lossy GIF of chickens](chickens lossy.gif)
