@@ -1,6 +1,17 @@
 
 // good breakdown of painterly effects to get simple rendering: https://www.youtube.com/watch?v=RPyrUI6s10w
 
+
+How to model:
+
+just place voxels in super coarse space. 10x10x10 chicken or whatever
+
+then zoom in and be able to connect same-colored voxels to each other in a line. give voxels a thickness at each point in the line, then draw a slug shape over all of them
+
+Widen a given line in any direction to make it even fatter in places, and possibly bent
+
+
+
 scrumBacklog.epics(
   "gradually over many incarnations",
   "picking up momentum",
