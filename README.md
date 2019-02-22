@@ -12,6 +12,10 @@ pain and effort
 passing    
 at the mercy of the elemental forces of the world    
 
-![Lossy GIF of chickens](chickens-hi-def.gif)
+### Graphical target
+
+![Lossy GIF of chickens](chickens.gif)
+
+### Design document
 
 ![Drawing in marker of tetrahedral chicken](chicken.jpg)
