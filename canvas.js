@@ -24,7 +24,7 @@ library.using([
         ":hover": {
           "border-color": "limegreen"}}),
       function() {
-        this.appendStyles({
+        this.addAttributes({
           "width": "384px",
           "height": "384px",
         })
@@ -43,7 +43,7 @@ library.using([
         var canvas = document.getElementById(
           canvasId)
         var gl = canvas.getContext(
-          'webgl')
+          'webgl', 384, 384)
         shader(gl)
     })
 
