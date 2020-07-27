@@ -2,10 +2,11 @@
   "dependencies": {
     "browser-bridge": "*",
     "module-library": "*",
-    "web-element": "^0.102.0",
-    "web-site": "*"
+    "web-element": "*",
+    "web-site": "*",
+    "bridge-module": "*"
   },
   "scripts": {
-    "start": "node start" 
+    "start": "node start"
   }
 }
