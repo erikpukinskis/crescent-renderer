@@ -14,24 +14,40 @@ library.using([
 
     var site = new WebSite()
 
+    const canvasId = element.anId()
+
+    const mouseMove = bridge.defineSingleton(
+      [canvasId],
+      function(canvasId) {
+        var rect
+        function handleMove(event) {
+          if (!rect) {
+            var canvas = document.getElementById(
+              canvasId)
+            var gl = canvas.getContext(
+              'experimental-webgl')
+            rect = gl.canvas.getBoundingClientRect()}
+          var x = event.clientX - rect.left;
+          var y = event.clientY - rect.top;
+          console.log(
+            x,
+            y)}
+        return handleMove})
+
     var canvas = element.template(
-      "canvas.canvas",
+      "canvas.canvas",{
+      "id": canvasId,
+      "onmousemove": mouseMove.withArgs(
+        bridge.event)
+        .evalable()},
       element.style({
-        "border": "8px solid lightgreen",
-        "border-radius": "16px",
-        "border-top-width": "24px",
-        "box-sizing": "border-box",
-        ":hover": {
-          "border-color": "limegreen"}}),
+        "border": "none"}),
       function() {
         this.addAttributes({
           "width": "384px",
-          "height": "384px",
-        })
-      })
+          "height": "384px"})})
 
     var drawable = canvas()
-    drawable.assignId()
 
     bridge.domReady([
       drawable.id,
@@ -40,10 +56,13 @@ library.using([
         './shader',
         bridge)],
       function(canvasId, shader) {
-         var canvas = document.getElementById(canvasId);
-         var gl = canvas.getContext('experimental-webgl');
-          shader(gl, canvas.width, canvas.height)
-    })
+        var canvas = document.getElementById(canvasId);
+        var gl = canvas.getContext(
+          'experimental-webgl')
+        shader(
+          gl,
+          canvas.width,
+          canvas.height)})
 
     bridge.addToHead(
       element.stylesheet(
@@ -55,5 +74,5 @@ library.using([
       bridge.requestHandler([
         drawable]))
 
-    site.start(8221)
-  })
+    site.start(
+      8221)})
