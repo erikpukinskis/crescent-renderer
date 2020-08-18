@@ -7,11 +7,15 @@ module.exports = library.export(
   function() {
     function shader(gl, canvasWidth, canvasHeight) {
 
-         /* Step1: Prepare the canvas and get WebGL context */
-
-         /* Step2: Define the geometry and store it in buffer objects */
-
-         var vertices = [-0.5, 0.5, -0.5, -0.5, 0.0, -0.5,];
+        // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
+        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+        var coordinates = new Float32Array([
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.0,
+          -0.5])
 
          // Create a new buffer object
          var vertex_buffer = gl.createBuffer();
@@ -20,50 +24,14 @@ module.exports = library.export(
          gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
          
          // Pass the vertices data to the buffer
-         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordinates), gl.STATIC_DRAW);
 
          // Unbind the buffer
          gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
          /* Step3: Create and compile Shader programs */
 
-         // Vertex shader source code
-         var vertCode =
-            'attribute vec2 coordinates;' + 
-            'void main(void) {' + ' gl_Position = vec4(coordinates,0.0, 1.0);' + '}';
-
-         //Create a vertex shader object
-         var vertShader = gl.createShader(gl.VERTEX_SHADER);
-
-         //Attach vertex shader source code
-         gl.shaderSource(vertShader, vertCode);
-
-         //Compile the vertex shader
-         gl.compileShader(vertShader);
-
-         //Fragment shader source code
-         var fragCode = 'void main(void) {' + 'gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' + '}';
-
-         // Create fragment shader object
-         var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-         // Attach fragment shader source code
-         gl.shaderSource(fragShader, fragCode);
-
-         // Compile the fragment shader
-         gl.compileShader(fragShader);
-
-         // Create a shader program object to store combined shader program
-         var shaderProgram = gl.createProgram();
-
-         // Attach a vertex shader
-         gl.attachShader(shaderProgram, vertShader); 
-         
-         // Attach a fragment shader
-         gl.attachShader(shaderProgram, fragShader);
-
-         // Link both programs
-         gl.linkProgram(shaderProgram);
+         const shaderProgram = createShaderProgram(gl)
 
          // Use the combined shader program object
          gl.useProgram(shaderProgram);
@@ -106,15 +74,7 @@ module.exports = library.export(
       // // useProgram is similar to bindBuffer, since we can only have one program going at a time we need to tell OpenGL which is up.
       // gl.useProgram(shaderProgram)
 
-      // // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
-      // // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
-      // var coordinates = new Float32Array([
-      //   -0.5,
-      //   0.5,
-      //   -0.5,
-      //   -0.5,
-      //   0.0,
-      //   -0.5])
+
 
       // // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
       // var vertexBuffer = gl.createBuffer()
@@ -181,7 +141,7 @@ module.exports = library.export(
       //   3) // how many to draw
     }
 
-    function createShaderProgram(gl, vertexShader, fragmentShader) {
+    function createShaderProgram(gl) {
       // The shader program just glues together the vertex and fragment shader so they can work together.
       var shaderProgram = gl.createProgram()
 
