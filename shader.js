@@ -24,24 +24,46 @@ module.exports = library.export(
           shaderProgram,
           "coordinates")
 
-        // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
-        gl.bindBuffer(
-          gl.ARRAY_BUFFER,
-          vertexBuffer)
-
-        // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
-        gl.vertexAttribPointer(
-          coordinatesAttr,
-          2, // I assume this sets the chunk size
-          gl.FLOAT, // and type
-          false, // this would normalize if the type were int, but has no effect on floats
-          0, // I think this could be a gap between each chunk
-          0) // and this could specify where to start in the array coordinate array we passed in
-
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
           coordinatesAttr)
 
+        function setCoordinates(coordinates) {
+          // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
+          gl.bindBuffer(
+            gl.ARRAY_BUFFER,
+            vertexBuffer)
+
+          gl.bufferData(
+            gl.ARRAY_BUFFER,
+            coordinates,
+            gl.STATIC_DRAW)
+
+          // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
+          gl.vertexAttribPointer(
+            coordinatesAttr,
+            2, // I assume this sets the chunk size
+            gl.FLOAT, // and type
+            false, // this would normalize if the type were int, but has no effect on floats
+            0, // I think this could be a gap between each chunk
+            0) // and this could specify where to start in the array coordinate array we passed in
+
+          // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
+          gl.bindBuffer(gl.ARRAY_BUFFER, null)
+        }
+
+        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+        var coordinates = new Float32Array([
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.0,
+          -0.5])
+
+        setCoordinates(coordinates)
+
+        // This is where the draw begins
         gl.clearColor(
           0.5,
           0.5,
@@ -57,31 +79,18 @@ module.exports = library.export(
           canvasWidth,
           canvasHeight)
 
-        gl.clear(
-          gl.COLOR_BUFFER_BIT)
 
-        // This actually writes the data to the GPU. Note that we don't specify which buffer we are writing to here, that's because OpenGL remembers which buffer we "bound":
-        // These six values values (x, y, x, y, x, y) represent the three points of a triangle.
-        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
-        var coordinates = new Float32Array([
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.0,
-          -0.5])
-        gl.bufferData(
-          gl.ARRAY_BUFFER,
-          coordinates,
-          gl.STATIC_DRAW)
+        function draw() {
+          gl.clear(
+            gl.COLOR_BUFFER_BIT)
 
-        // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
-        gl.bindBuffer(gl.ARRAY_BUFFER, null)
+          gl.drawArrays(
+            gl.TRIANGLES,
+            0, // first one to start at
+            3) // how many to draw
+        }
 
-        gl.drawArrays(
-          gl.TRIANGLES,
-          0, // first one to start at
-          3) // how many to draw
+        draw()
     }
 
     function createShaderProgram(gl) {
