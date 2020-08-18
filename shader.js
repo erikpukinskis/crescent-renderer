@@ -5,8 +5,10 @@ var library = require("module-library")(require)
 module.exports = library.export(
   "shader",
   function() {
-    function shader(gl, canvasWidth, canvasHeight) {
 
+    // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
+
+    function shader(gl, canvasWidth, canvasHeight) {
         // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
         // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
         var coordinates = new Float32Array([
@@ -68,7 +70,7 @@ module.exports = library.export(
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
           coordinatesAttr)
-  
+
         gl.clearColor(
           0.5,
           0.5,
