@@ -34,6 +34,10 @@ library.using([
             y)}
         return handleMove})
 
+    var PIXEL_SIZE = 64
+    var CANVAS_WIDTH = 6
+    var CANVAS_HEIGHT = 6
+
     var canvas = element.template(
       "canvas.canvas",{
       "id": canvasId,
@@ -44,8 +48,8 @@ library.using([
         "border": "none"}),
       function() {
         this.addAttributes({
-          "width": "384px",
-          "height": "384px"})})
+          "width": PIXEL_SIZE*CANVAS_WIDTH+"px",
+          "height": PIXEL_SIZE*CANVAS_HEIGHT+"px"})})
 
     var drawable = canvas()
 
@@ -53,12 +57,13 @@ library.using([
       drawable.id,
       bridgeModule(
         library,
-        './shader',
+        "./shader",
         bridge)],
       function(canvasId, shader) {
         var canvas = document.getElementById(canvasId);
         var gl = canvas.getContext(
-          'experimental-webgl')
+          "experimental-webgl",{
+          antialias: false})
         shader(
           gl,
           canvas.width,
@@ -67,6 +72,10 @@ library.using([
     bridge.addToHead(
       element.stylesheet(
         canvas))
+    bridge.addToHead(
+      element(
+        "title",
+        "Hi!"))
 
     site.addRoute(
       "get",
