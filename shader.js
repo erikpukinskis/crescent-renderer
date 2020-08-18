@@ -6,11 +6,17 @@ module.exports = library.export(
   "shader",
   function() {
 
+    function ShaderScene() {}
+
     // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
 
-    function shader(gl, canvasWidth, canvasHeight) {
+    ShaderScene.prototype.init = function(canvas) {
+        var gl = this.gl = canvas.getContext(
+          "experimental-webgl",{
+          antialias: false})
+
         // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
-        var vertexBuffer = gl.createBuffer()
+        this.vertexBuffer = gl.createBuffer()
 
         // The shader program combines them together
         const shaderProgram = createShaderProgram(
@@ -20,48 +26,13 @@ module.exports = library.export(
         gl.useProgram(shaderProgram)
 
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
-        var coordinatesAttr = gl.getAttribLocation(
+        var coordinatesAttr = this.coordinatesAttr = gl.getAttribLocation(
           shaderProgram,
           "coordinates")
 
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
           coordinatesAttr)
-
-        function setCoordinates(coordinates) {
-          // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
-          gl.bindBuffer(
-            gl.ARRAY_BUFFER,
-            vertexBuffer)
-
-          gl.bufferData(
-            gl.ARRAY_BUFFER,
-            coordinates,
-            gl.STATIC_DRAW)
-
-          // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
-          gl.vertexAttribPointer(
-            coordinatesAttr,
-            2, // I assume this sets the chunk size
-            gl.FLOAT, // and type
-            false, // this would normalize if the type were int, but has no effect on floats
-            0, // I think this could be a gap between each chunk
-            0) // and this could specify where to start in the array coordinate array we passed in
-
-          // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
-          gl.bindBuffer(gl.ARRAY_BUFFER, null)
-        }
-
-        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
-        var coordinates = new Float32Array([
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.0,
-          -0.5])
-
-        setCoordinates(coordinates)
 
         // This is where the draw begins
         gl.clearColor(
@@ -76,21 +47,55 @@ module.exports = library.export(
         gl.viewport(
           0,
           0,
-          canvasWidth,
-          canvasHeight)
+          canvas.width,
+          canvas.height)
+    }
 
+    ShaderScene.prototype.draw = function() {
+      if (!this.gl) {
+        throw new Error(
+          "Forgot to call ShaderScene.init")}
+      var gl = this.gl
 
-        function draw() {
-          gl.clear(
-            gl.COLOR_BUFFER_BIT)
+      gl.clear(
+        gl.COLOR_BUFFER_BIT)
 
-          gl.drawArrays(
-            gl.TRIANGLES,
-            0, // first one to start at
-            3) // how many to draw
-        }
+      gl.drawArrays(
+        gl.TRIANGLES,
+        0, // first one to start at
+        3) // how many to draw
+    }
 
-        draw()
+    ShaderScene.prototype.setCoordinates = function(coordinates) {
+      if (!this.gl) {
+        throw new Error(
+        "Forgot to call ShaderScene.init")}
+
+      // Coordinates should be a Float32Array. We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+
+      var gl = this.gl
+
+      // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
+      gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        this.vertexBuffer)
+
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        coordinates,
+        gl.STATIC_DRAW)
+
+      // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
+      gl.vertexAttribPointer(
+        this.coordinatesAttr,
+        2, // I assume this sets the chunk size
+        gl.FLOAT, // and type
+        false, // this would normalize if the type were int, but has no effect on floats
+        0, // I think this could be a gap between each chunk
+        0) // and this could specify where to start in the array coordinate array we passed in
+
+      // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
+      gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
 
     function createShaderProgram(gl) {
@@ -166,7 +171,7 @@ module.exports = library.export(
       gl.compileShader(fragmentShader)
 
       checkCompileStatus(gl, fragmentShader)
-  
+
       return fragmentShader
     }
 
@@ -178,6 +183,6 @@ module.exports = library.export(
       }
     }
 
-    return shader
+    return ShaderScene
   }
 )

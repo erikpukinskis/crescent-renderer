@@ -16,22 +16,56 @@ library.using([
 
     const canvasId = element.anId()
 
+    const scene = bridge.defineSingleton(
+      'scene',[
+      canvasId,
+      bridgeModule(
+        library,
+        "./shader",
+        bridge)],
+      function(canvasId, ShaderScene) {
+        return new ShaderScene()
+      })
+
+    bridge.domReady([
+      canvasId,
+      scene],
+      function initScene(canvasId, scene) {
+        var canvas = document.getElementById(
+          canvasId)
+        scene.init(canvas)})
+
     const mouseMove = bridge.defineSingleton(
-      [canvasId],
-      function(canvasId) {
+      [canvasId, scene],
+      function handleMouseMove(canvasId, scene) {
         var rect
+        var coordinates = new Float32Array([
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.0,
+          -0.5])
+
         function handleMove(event) {
           if (!rect) {
-            var canvas = document.getElementById(
-              canvasId)
-            var gl = canvas.getContext(
-              'experimental-webgl')
-            rect = gl.canvas.getBoundingClientRect()}
-          var x = event.clientX - rect.left;
-          var y = event.clientY - rect.top;
+            getBoundingClientRect()}
+
+          var x = event.clientX - rect.left
+          var y = event.clientY - rect.top
+          scene.setCoordinates(coordinates)
+          scene.draw()
           console.log(
             x,
             y)}
+
+        function getBoundingClientRect() {
+          var canvas = document.getElementById(
+            canvasId)
+          var gl = canvas.getContext(
+            'experimental-webgl')
+          rect = gl.canvas.getBoundingClientRect()}
+
         return handleMove})
 
     var PIXEL_SIZE = 64
@@ -52,22 +86,6 @@ library.using([
           "height": PIXEL_SIZE*CANVAS_HEIGHT+"px"})})
 
     var drawable = canvas()
-
-    bridge.domReady([
-      drawable.id,
-      bridgeModule(
-        library,
-        "./shader",
-        bridge)],
-      function(canvasId, shader) {
-        var canvas = document.getElementById(canvasId);
-        var gl = canvas.getContext(
-          "experimental-webgl",{
-          antialias: false})
-        shader(
-          gl,
-          canvas.width,
-          canvas.height)})
 
     bridge.addToHead(
       element.stylesheet(
