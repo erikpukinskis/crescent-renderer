@@ -53,6 +53,8 @@ library.using([
 
           var x = event.clientX - rect.left
           var y = event.clientY - rect.top
+          coordinates[0] = x/384 - 0.5
+          coordinates[1] = -1 * (y/384 - 0.5)
           scene.setCoordinates(coordinates)
           scene.draw()
           console.log(
