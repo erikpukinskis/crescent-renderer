@@ -9,36 +9,8 @@ module.exports = library.export(
     // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
 
     function shader(gl, canvasWidth, canvasHeight) {
-        // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
-        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
-        var coordinates = new Float32Array([
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.0,
-          -0.5])
-
         // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
         var vertexBuffer = gl.createBuffer()
-
-        // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
-        gl.bindBuffer(
-          gl.ARRAY_BUFFER,
-          vertexBuffer)
-
-        // And then this actually writes the data to the GPU. Note that we don't specify which buffer we are writing to here, that's because OpenGL remembers which buffer we "bound":
-        gl.bufferData(
-          gl.ARRAY_BUFFER,
-          coordinates,
-          gl.STATIC_DRAW)
-
-        // Now we're done with that, so we unbind it, by bunding null
-        gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-        gl.bindBuffer(
-          gl.ARRAY_BUFFER,
-          vertexBuffer)
 
         // The shader program combines them together
         const shaderProgram = createShaderProgram(
@@ -47,18 +19,17 @@ module.exports = library.export(
         // useProgram is similar to bindBuffer, since we can only have one program going at a time we need to tell OpenGL which is up.
         gl.useProgram(shaderProgram)
 
-
-         /* Step 4: Associate the shader programs to buffer objects */
-
-         //Bind vertex buffer object
-         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
         var coordinatesAttr = gl.getAttribLocation(
           shaderProgram,
           "coordinates")
 
-        // And this seems to configure it...
+        // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
+        gl.bindBuffer(
+          gl.ARRAY_BUFFER,
+          vertexBuffer)
+
+        // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
         gl.vertexAttribPointer(
           coordinatesAttr,
           2, // I assume this sets the chunk size
@@ -80,14 +51,32 @@ module.exports = library.export(
         gl.enable(
           gl.DEPTH_TEST)
 
-        gl.clear(
-          gl.COLOR_BUFFER_BIT)
-
         gl.viewport(
           0,
           0,
           canvasWidth,
           canvasHeight)
+
+        gl.clear(
+          gl.COLOR_BUFFER_BIT)
+
+        // This actually writes the data to the GPU. Note that we don't specify which buffer we are writing to here, that's because OpenGL remembers which buffer we "bound":
+        // These six values values (x, y, x, y, x, y) represent the three points of a triangle.
+        // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+        var coordinates = new Float32Array([
+          -0.5,
+          0.5,
+          -0.5,
+          -0.5,
+          0.0,
+          -0.5])
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          coordinates,
+          gl.STATIC_DRAW)
+
+        // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
+        gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
         gl.drawArrays(
           gl.TRIANGLES,
