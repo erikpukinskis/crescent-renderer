@@ -6,86 +6,179 @@ module.exports = library.export(
   "shader",
   function() {
     function shader(gl, canvasWidth, canvasHeight) {
-      // The shader program combines them together
-      const shaderProgram = createShaderProgram(
-        gl)
 
-      // useProgram is similar to bindBuffer, since we can only have one program going at a time we need to tell OpenGL which is up.
-      gl.useProgram(shaderProgram)
+         /* Step1: Prepare the canvas and get WebGL context */
 
-      // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
-      // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
-      var coordinates = new Float32Array([
-        -0.5,
-        0.5,
-        -0.5,
-        -0.5,
-        0.0,
-        -0.5])
+         /* Step2: Define the geometry and store it in buffer objects */
 
-      // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
-      var vertexBuffer = gl.createBuffer()
+         var vertices = [-0.5, 0.5, -0.5, -0.5, 0.0, -0.5,];
 
-      // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
-      gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        vertexBuffer)
+         // Create a new buffer object
+         var vertex_buffer = gl.createBuffer();
 
-      // And then this actually writes the data to the GPU. Note that we don't specify which buffer we are writing to here, that's because OpenGL remembers which buffer we "bound":
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        coordinates,
-        gl.STATIC_DRAW)
+         // Bind an empty array buffer to it
+         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+         
+         // Pass the vertices data to the buffer
+         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
+         // Unbind the buffer
+         gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-      // // Now we're done with that, so we unbind it, by bunding null
-      // gl.bindBuffer(gl.ARRAY_BUFFER, null)
+         /* Step3: Create and compile Shader programs */
 
+         // Vertex shader source code
+         var vertCode =
+            'attribute vec2 coordinates;' + 
+            'void main(void) {' + ' gl_Position = vec4(coordinates,0.0, 1.0);' + '}';
+
+         //Create a vertex shader object
+         var vertShader = gl.createShader(gl.VERTEX_SHADER);
+
+         //Attach vertex shader source code
+         gl.shaderSource(vertShader, vertCode);
+
+         //Compile the vertex shader
+         gl.compileShader(vertShader);
+
+         //Fragment shader source code
+         var fragCode = 'void main(void) {' + 'gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' + '}';
+
+         // Create fragment shader object
+         var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+         // Attach fragment shader source code
+         gl.shaderSource(fragShader, fragCode);
+
+         // Compile the fragment shader
+         gl.compileShader(fragShader);
+
+         // Create a shader program object to store combined shader program
+         var shaderProgram = gl.createProgram();
+
+         // Attach a vertex shader
+         gl.attachShader(shaderProgram, vertShader); 
+         
+         // Attach a fragment shader
+         gl.attachShader(shaderProgram, fragShader);
+
+         // Link both programs
+         gl.linkProgram(shaderProgram);
+
+         // Use the combined shader program object
+         gl.useProgram(shaderProgram);
+
+         /* Step 4: Associate the shader programs to buffer objects */
+
+         //Bind vertex buffer object
+         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+         //Get the attribute location
+         var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+
+         //point an attribute to the currently bound VBO
+         gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+
+         //Enable the attribute
+         gl.enableVertexAttribArray(coord);
+
+         /* Step5: Drawing the required object (triangle) */
+
+         // Clear the canvas
+         gl.clearColor(0.5, 0.5, 0.5, 0.9);
+
+         // Enable the depth test
+         gl.enable(gl.DEPTH_TEST); 
+         
+         // Clear the color buffer bit
+         gl.clear(gl.COLOR_BUFFER_BIT);
+
+         // Set the view port
+         gl.viewport(0,0,canvasWidth,canvasHeight);
+
+         // Draw the triangle
+         gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      // // The shader program combines them together
+      // const shaderProgram = createShaderProgram(
+      //   gl)
+
+      // // useProgram is similar to bindBuffer, since we can only have one program going at a time we need to tell OpenGL which is up.
+      // gl.useProgram(shaderProgram)
+
+      // // Here are some coordinates that should make a spikey triangle. There are six values: x, y, x, y, x, y.
+      // // We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+      // var coordinates = new Float32Array([
+      //   -0.5,
+      //   0.5,
+      //   -0.5,
+      //   -0.5,
+      //   0.0,
+      //   -0.5])
+
+      // // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
+      // var vertexBuffer = gl.createBuffer()
+
+      // // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
       // gl.bindBuffer(
       //   gl.ARRAY_BUFFER,
       //   vertexBuffer)
 
-      // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
-      var coordinatesAttr = gl.getAttribLocation(
-        shaderProgram,
-        "coordinates")
-
-      // And this seems to configure it...
-      gl.vertexAttribPointer(
-        coordinatesAttr,
-        2, // I assume this sets the chunk size
-        gl.FLOAT, // and type
-        false, // this would normalize if the type were int, but has no effect on floats
-        0, // I think this could be a gap between each chunk
-        0) // and this could specify where to start in the array coordinate array we passed in
-
-      // This I guess just turns that attribute on
-      gl.enableVertexAttribArray(
-        coordinatesAttr)
+      // // And then this actually writes the data to the GPU. Note that we don't specify which buffer we are writing to here, that's because OpenGL remembers which buffer we "bound":
+      // gl.bufferData(
+      //   gl.ARRAY_BUFFER,
+      //   coordinates,
+      //   gl.STATIC_DRAW)
 
 
-      gl.clearColor(
-        0.5,
-        0.5,
-        0.5,
-        0.9)
+      // // // Now we're done with that, so we unbind it, by bunding null
+      // // gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
-      gl.enable(
-        gl.DEPTH_TEST)
+      // // gl.bindBuffer(
+      // //   gl.ARRAY_BUFFER,
+      // //   vertexBuffer)
 
-      gl.clear(
-        gl.COLOR_BUFFER_BIT)
+      // // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
+      // var coordinatesAttr = gl.getAttribLocation(
+      //   shaderProgram,
+      //   "coordinates")
 
-      gl.viewport(
-        0,
-        0,
-        canvasWidth,
-        canvasHeight)
+      // // And this seems to configure it...
+      // gl.vertexAttribPointer(
+      //   coordinatesAttr,
+      //   2, // I assume this sets the chunk size
+      //   gl.FLOAT, // and type
+      //   false, // this would normalize if the type were int, but has no effect on floats
+      //   0, // I think this could be a gap between each chunk
+      //   0) // and this could specify where to start in the array coordinate array we passed in
 
-      gl.drawArrays(
-        gl.TRIANGLES,
-        0, // first one to start at
-        3) // how many to draw
+      // // This I guess just turns that attribute on
+      // gl.enableVertexAttribArray(
+      //   coordinatesAttr)
+
+
+      // gl.clearColor(
+      //   0.5,
+      //   0.5,
+      //   0.5,
+      //   0.9)
+
+      // gl.enable(
+      //   gl.DEPTH_TEST)
+
+      // gl.clear(
+      //   gl.COLOR_BUFFER_BIT)
+
+      // gl.viewport(
+      //   0,
+      //   0,
+      //   canvasWidth,
+      //   canvasHeight)
+
+      // gl.drawArrays(
+      //   gl.TRIANGLES,
+      //   0, // first one to start at
+      //   3) // how many to draw
     }
 
     function createShaderProgram(gl, vertexShader, fragmentShader) {

@@ -40,11 +40,9 @@ library.using([
         './shader',
         bridge)],
       function(canvasId, shader) {
-        var canvas = document.getElementById(
-          canvasId)
-        var gl = canvas.getContext(
-          'webgl', 384, 384)
-        shader(gl)
+         var canvas = document.getElementById(canvasId);
+         var gl = canvas.getContext('experimental-webgl');
+          shader(gl, canvas.width, canvas.height)
     })
 
     bridge.addToHead(
