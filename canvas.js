@@ -35,9 +35,16 @@ library.using([
           canvasId)
         scene.init(canvas)})
 
+    var PIXEL_SIZE = 64
+    var CANVAS_WIDTH = 8
+    var CANVAS_HEIGHT = 6
+
+    var canvasWidthInPixels = CANVAS_WIDTH * PIXEL_SIZE
+    var canvasHeightInPixels = CANVAS_HEIGHT * PIXEL_SIZE
+
     const mouseMove = bridge.defineSingleton(
-      [canvasId, scene],
-      function handleMouseMove(canvasId, scene) {
+      [canvasId, canvasWidthInPixels, canvasHeightInPixels, scene],
+      function handleMouseMove(canvasId, canvasWidthInPixels, canvasHeightInPixels, scene) {
         var rect
         var coordinates = new Float32Array([
           -0.5,
@@ -53,8 +60,8 @@ library.using([
 
           var x = event.clientX - rect.left
           var y = event.clientY - rect.top
-          coordinates[0] = x/384 - 0.5
-          coordinates[1] = -1 * (y/384 - 0.5)
+          coordinates[0] = 2 * (x /canvasWidthInPixels - 0.5)
+          coordinates[1] = -2 * (y / canvasHeightInPixels - 0.5)
           scene.setCoordinates(coordinates)
           scene.draw()
           console.log(
@@ -70,10 +77,6 @@ library.using([
 
         return handleMove})
 
-    var PIXEL_SIZE = 64
-    var CANVAS_WIDTH = 6
-    var CANVAS_HEIGHT = 6
-
     var canvas = element.template(
       "canvas.canvas",{
       "id": canvasId,
@@ -84,8 +87,8 @@ library.using([
         "border": "none"}),
       function() {
         this.addAttributes({
-          "width": PIXEL_SIZE*CANVAS_WIDTH+"px",
-          "height": PIXEL_SIZE*CANVAS_HEIGHT+"px"})})
+          "width": canvasWidthInPixels+"px",
+          "height": canvasHeightInPixels+"px"})})
 
     var drawable = canvas()
 
