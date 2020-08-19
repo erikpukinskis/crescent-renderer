@@ -81,7 +81,8 @@ library.using([
         bridge.event)
         .evalable()},
       element.style({
-        "background": "#efefef",
+        "position": "absolute",
+        "background": "rgba(0,0,0,0.05)",
         "border": "none"}),
       function() {
         this.addAttributes({
@@ -102,7 +103,17 @@ library.using([
       "get",
       "/",
       bridge.requestHandler([
+        element(
+          "img",{
+          "src": "/trace.gif"},
+          element.style({
+            "position": "absolute"})),
         drawable]))
+
+    site.addRoute(
+      "get",
+      "/trace.gif",
+      site.sendFile(__dirname, 'art/02.gif'))
 
     site.start(
       8221)})
