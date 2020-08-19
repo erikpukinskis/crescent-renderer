@@ -99,21 +99,60 @@ library.using([
         "title",
         "Hi!"))
 
+    // There's something I would like to do here, which is I would like to create a singleton that can be curried.
+
+    var buildZoom = bridge.defineFunction(
+      function buildZoom(zoomIncrement, elementId) {
+        var zoomLevel = 0
+        var element
+        function zoom() {
+          zoomLevel += zoomIncrement
+          if (!element) {
+            element = document.getElementById(
+              elementId)}
+          var scale
+          if (zoomLevel == 0) {
+            scale = 1}
+          if (zoomLevel < 0) {
+            scale = -1/(zoomLevel-1)
+          } else {
+            scale = 1*(zoomLevel+1)
+          }
+          element.style.transform = "scale("+scale+")"}
+
+        return zoom})
+
+    var tracingId = element.anId()
+    var tracingImage = element(
+      "img",{
+      "id": tracingId,
+      "src": "/trace"},
+      element.style({
+        "transform-origin": "top left",
+        "position": "absolute"}))
+
+    var zoomInButton = element(
+      "button",
+      "Zoom In",{
+      "onclick": bridge.call(
+        buildZoom.withArgs(
+          1,
+          tracingId),
+        "zoomIn")})
+
     site.addRoute(
       "get",
       "/",
       bridge.requestHandler([
-        element(
-          "img",{
-          "src": "/trace.gif"},
-          element.style({
-            "position": "absolute"})),
+        zoomInButton,
+        element("br"),
+        tracingImage,
         drawable]))
 
     site.addRoute(
       "get",
-      "/trace.gif",
-      site.sendFile(__dirname, 'art/02.gif'))
+      "/trace",
+      site.sendFile(__dirname, 'art', 'fox cycle 31 TRACE + ear + 07.25.png'))
 
     site.start(
       8221)})
