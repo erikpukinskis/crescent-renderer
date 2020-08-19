@@ -63,10 +63,7 @@ library.using([
           coordinates[0] = 2 * (x /canvasWidthInPixels - 0.5)
           coordinates[1] = -2 * (y / canvasHeightInPixels - 0.5)
           scene.setCoordinates(coordinates)
-          scene.draw()
-          console.log(
-            x,
-            y)}
+          scene.draw()}
 
         function getBoundingClientRect() {
           var canvas = document.getElementById(
@@ -84,6 +81,7 @@ library.using([
         bridge.event)
         .evalable()},
       element.style({
+        "background": "#efefef",
         "border": "none"}),
       function() {
         this.addAttributes({

@@ -57,9 +57,6 @@ module.exports = library.export(
           "Forgot to call ShaderScene.init")}
       var gl = this.gl
 
-      gl.clear(
-        gl.COLOR_BUFFER_BIT)
-
       gl.drawArrays(
         gl.TRIANGLES,
         0, // first one to start at
