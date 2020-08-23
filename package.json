@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "browser-bridge": "*",
+    "browser-bridge": "^0.192.0",
     "module-library": "*",
     "web-element": "*",
     "web-site": "*",
