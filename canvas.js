@@ -7,11 +7,12 @@ library.using([
   "web-site",
   "web-element",
   "bridge-module",
-  "./shader"],
-  function(BrowserBridge, WebSite, element, bridgeModule, _) {
+  "./shader",
+  "basic-styles"],
+  function(BrowserBridge, WebSite, element, bridgeModule, _, basicStyles) {
 
     var bridge = new BrowserBridge()
-
+    basicStyles.addTo(bridge)
     var site = new WebSite()
 
     const canvasId = element.anId()
@@ -124,31 +125,46 @@ library.using([
     // This is my stack right now, I added this function and it works, but when I tried to run the browser-bridge tests, they fail. So:
     // 1) Add Zoom In button to canvas.js
 
-    var zoom = bridge.defineSingleton(
-      function() {
-        return {
-          level: 0,
-          add: function(n) {
-            this.level = this.level + n
-          },
-        }
-      })
+    var setQueryParam = bridge.defineFunction(
+      function setQueryParam(key, value) {
+        var params = new URLSearchParams(
+          document.location.search)
+        params.set(key, value)
+        history.replaceState(
+          null,
+          null,
+          "?"+params.toString())})
+
+    var getQueryParam = bridge.defineFunction(
+      function getQueryParam(key, sanitize) {
+        var params = new URLSearchParams(
+          document.location.search)
+        var string = params.get(
+          key)
+        if (sanitize) {
+          return sanitize(string)
+        } else {
+          return string}})
 
     var zoomBy = bridge.defineFunction(
-      [zoom, tracingId],
-      function zoomBy(zoom, elementId, zoomIncrement) {
-        zoom.add(zoomIncrement)
+      [tracingId, getQueryParam, setQueryParam],
+      function zoomBy(elementId, getQueryParam, setQueryParam, zoomIncrement) {
+        var zoomLevel = getQueryParam("zoom", parseInt) || 0
+        zoomLevel += zoomIncrement
         var element = document.getElementById(
             elementId)
         var scale
-        if (zoom.level == 0) {
+        if (zoomLevel == 0) {
           scale = 1}
-        if (zoom.level < 0) {
-          scale = -1/(zoom.level-1)
+        if (zoomLevel < 0) {
+          scale = -1/(zoomLevel-1)
         } else {
-          scale = 1*(zoom.level+1)
+          scale = 1*(zoomLevel+1)
         }
-        element.style.transform = "scale("+scale+")"})
+        element.style.transform = "scale("+scale+")"
+        setQueryParam(
+          "zoom",
+          zoomLevel)})
 
     var zoomInButton = element(
       "button",
@@ -164,11 +180,13 @@ library.using([
 
     site.addRoute(
       "get",
-      "/",
+      "/flurble",
       bridge.requestHandler([
-        zoomInButton,
-        " ",
-        zoomOutButton,
+        element(
+          "p",[
+            zoomInButton,
+            " ",
+            zoomOutButton]),
         element("br"),
         tracingImage,
         drawable]))

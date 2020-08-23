@@ -4,7 +4,8 @@
     "module-library": "*",
     "web-element": "*",
     "web-site": "*",
-    "bridge-module": "*"
+    "bridge-module": "*",
+    "basic-styles": "*"
   },
   "scripts": {
     "start": "node start"
