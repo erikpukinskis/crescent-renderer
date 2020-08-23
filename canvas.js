@@ -99,29 +99,6 @@ library.using([
         "title",
         "Hi!"))
 
-    // There's something I would like to do here, which is I would like to create a singleton that can be curried.
-
-    var buildZoom = bridge.defineFunction(
-      function buildZoom(zoomIncrement, elementId) {
-        var zoomLevel = 0
-        var element
-        function zoom() {
-          zoomLevel += zoomIncrement
-          if (!element) {
-            element = document.getElementById(
-              elementId)}
-          var scale
-          if (zoomLevel == 0) {
-            scale = 1}
-          if (zoomLevel < 0) {
-            scale = -1/(zoomLevel-1)
-          } else {
-            scale = 1*(zoomLevel+1)
-          }
-          element.style.transform = "scale("+scale+")"}
-
-        return zoom})
-
     var tracingId = element.anId()
     var tracingImage = element(
       "img",{
@@ -147,20 +124,51 @@ library.using([
     // This is my stack right now, I added this function and it works, but when I tried to run the browser-bridge tests, they fail. So:
     // 1) Add Zoom In button to canvas.js
 
+    var zoom = bridge.defineSingleton(
+      function() {
+        return {
+          level: 0,
+          add: function(n) {
+            this.level = this.level + n
+          },
+        }
+      })
+
+    var zoomBy = bridge.defineFunction(
+      [zoom, tracingId],
+      function zoomBy(zoom, elementId, zoomIncrement) {
+        zoom.add(zoomIncrement)
+        var element = document.getElementById(
+            elementId)
+        var scale
+        if (zoom.level == 0) {
+          scale = 1}
+        if (zoom.level < 0) {
+          scale = -1/(zoom.level-1)
+        } else {
+          scale = 1*(zoom.level+1)
+        }
+        element.style.transform = "scale("+scale+")"})
+
     var zoomInButton = element(
       "button",
       "Zoom In",{
-      "onclick": bridge.call(
-        buildZoom.withArgs(
-          1,
-          tracingId),
-        "zoomIn")})
+      "onclick": zoomBy.withArgs(
+          1).evalable()})
+
+    var zoomOutButton = element(
+      "button",
+      "Zoom Out",{
+      "onclick": zoomBy.withArgs(
+          -1).evalable()})
 
     site.addRoute(
       "get",
       "/",
       bridge.requestHandler([
         zoomInButton,
+        " ",
+        zoomOutButton,
         element("br"),
         tracingImage,
         drawable]))
