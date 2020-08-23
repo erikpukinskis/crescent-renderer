@@ -11,24 +11,24 @@ library.using([
   "basic-styles"],
   function(BrowserBridge, WebSite, element, bridgeModule, _, basicStyles) {
 
-    var bridge = new BrowserBridge()
-    basicStyles.addTo(bridge)
+    var baseBridge = new BrowserBridge()
+    basicStyles.addTo(baseBridge)
     var site = new WebSite()
 
     const canvasId = element.anId()
 
-    const scene = bridge.defineSingleton(
+    const scene = baseBridge.defineSingleton(
       'scene',[
       canvasId,
       bridgeModule(
         library,
         "./shader",
-        bridge)],
+        baseBridge)],
       function(canvasId, ShaderScene) {
         return new ShaderScene()
       })
 
-    bridge.domReady([
+    baseBridge.domReady([
       canvasId,
       scene],
       function initScene(canvasId, scene) {
@@ -43,7 +43,7 @@ library.using([
     var canvasWidthInPixels = CANVAS_WIDTH * PIXEL_SIZE
     var canvasHeightInPixels = CANVAS_HEIGHT * PIXEL_SIZE
 
-    const mouseMove = bridge.defineSingleton(
+    const mouseMove = baseBridge.defineSingleton(
       [canvasId, canvasWidthInPixels, canvasHeightInPixels, scene],
       function handleMouseMove(canvasId, canvasWidthInPixels, canvasHeightInPixels, scene) {
         var rect
@@ -79,7 +79,7 @@ library.using([
       "canvas.canvas",{
       "id": canvasId,
       "onmousemove": mouseMove.withArgs(
-        bridge.event)
+        BrowserBridge.event)
         .evalable()},
       element.style({
         "position": "absolute",
@@ -92,22 +92,32 @@ library.using([
 
     var drawable = canvas()
 
-    bridge.addToHead(
+    baseBridge.addToHead(
       element.stylesheet(
         canvas))
-    bridge.addToHead(
+    baseBridge.addToHead(
       element(
         "title",
         "Hi!"))
 
-    var tracingId = element.anId()
-    var tracingImage = element(
+    var tracer = element.template(
+      ".tracer",
       "img",{
-      "id": tracingId,
       "src": "/trace"},
       element.style({
         "transform-origin": "top left",
-        "position": "absolute"}))
+        "position": "absolute"}),
+      function(zoomLevel) {
+        this.assignId()
+        if (!zoomLevel) {
+          return }
+        this.appendStyles({
+          "transform": getZoomTransform(
+            zoomLevel)})})
+
+    baseBridge.addToHead(
+      element.stylesheet([
+        tracer]))
 
     // Got some stuff done:
     // 6) Investigate why jobPool.resign is requesting work -> it's basically "re-requesting" the worker function be enqueued
@@ -125,7 +135,7 @@ library.using([
     // This is my stack right now, I added this function and it works, but when I tried to run the browser-bridge tests, they fail. So:
     // 1) Add Zoom In button to canvas.js
 
-    var setQueryParam = bridge.defineFunction(
+    var setQueryParam = baseBridge.defineFunction(
       function setQueryParam(key, value) {
         var params = new URLSearchParams(
           document.location.search)
@@ -135,7 +145,7 @@ library.using([
           null,
           "?"+params.toString())})
 
-    var getQueryParam = bridge.defineFunction(
+    var getQueryParam = baseBridge.defineFunction(
       function getQueryParam(key, sanitize) {
         var params = new URLSearchParams(
           document.location.search)
@@ -146,14 +156,8 @@ library.using([
         } else {
           return string}})
 
-    var zoomBy = bridge.defineFunction(
-      [tracingId, getQueryParam, setQueryParam],
-      function zoomBy(elementId, getQueryParam, setQueryParam, zoomIncrement) {
-        var zoomLevel = getQueryParam("zoom", parseInt) || 0
-        zoomLevel += zoomIncrement
-        var element = document.getElementById(
-            elementId)
-        var scale
+    function getZoomTransform(zoomLevel) {
+      var scale
         if (zoomLevel == 0) {
           scale = 1}
         if (zoomLevel < 0) {
@@ -161,35 +165,53 @@ library.using([
         } else {
           scale = 1*(zoomLevel+1)
         }
-        element.style.transform = "scale("+scale+")"
+        return "scale("+scale+")"}
+
+    var zoomBy = baseBridge.defineFunction(
+      [getQueryParam, setQueryParam, getZoomTransform],
+      function zoomBy(getQueryParam, setQueryParam, getZoomTransform, elementId, zoomIncrement) {
+        debugger
+        var zoomLevel = getQueryParam("zoom", parseInt) || 0
+        zoomLevel += zoomIncrement
+        var element = document.getElementById(
+            elementId)
+        element.style.transform = getZoomTransform(zoomLevel)
         setQueryParam(
           "zoom",
           zoomLevel)})
 
-    var zoomInButton = element(
+    var zoomButton = element.template(
       "button",
-      "Zoom In",{
-      "onclick": zoomBy.withArgs(
-          1).evalable()})
-
-    var zoomOutButton = element(
-      "button",
-      "Zoom Out",{
-      "onclick": zoomBy.withArgs(
-          -1).evalable()})
+      function(elementId, zoomIncrement) {
+        var zoom = zoomBy.withArgs(
+            elementId,
+            zoomIncrement)
+        var direction = zoomIncrement > 0 ? "In" : "Out"
+        this.addChild("Zoom "+direction)
+        this.addAttributes({
+          "onclick": zoom.evalable()})})
 
     site.addRoute(
       "get",
       "/flurble",
-      bridge.requestHandler([
-        element(
+      function(request, response) {
+        var zoomLevel = request.query.zoom
+        var bridge = baseBridge.forResponse(
+          response)
+        var tracingImage = tracer(zoomLevel)
+        bridge.send([
+          element(
           "p",[
-            zoomInButton,
+            zoomButton(
+              tracingImage.id,
+              1),
             " ",
-            zoomOutButton]),
-        element("br"),
-        tracingImage,
-        drawable]))
+            zoomButton(
+              tracingImage.id,
+              -1)]),
+          element("br"),
+          tracingImage,
+          drawable])})
 
     site.addRoute(
       "get",
