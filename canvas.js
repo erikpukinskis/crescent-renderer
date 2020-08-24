@@ -119,22 +119,6 @@ library.using([
       element.stylesheet([
         tracer]))
 
-    // Got some stuff done:
-    // 6) Investigate why jobPool.resign is requesting work -> it's basically "re-requesting" the worker function be enqueued
-    // 5) Try to figure out what's happening in browser-task -> We just weren't logging out the right variable for the socket.id
-    // 4) Get browser-bridge tests running
-    // 8) Have browserTask resign remove all the associated tasks from the queue
-    // 9) Clean up job-pool naming
-    // 10) Fix multiple All is done's
-    // 11) Get browser-task tests to run at all
-    // 7) Get "partials can be loaded via POST" to run reliably
-    // 3) Add test for bridge.call
-    // 2) Add bridge.call
-
-
-    // This is my stack right now, I added this function and it works, but when I tried to run the browser-bridge tests, they fail. So:
-    // 1) Add Zoom In button to canvas.js
-
     var setQueryParam = baseBridge.defineFunction(
       function setQueryParam(key, value) {
         var params = new URLSearchParams(
