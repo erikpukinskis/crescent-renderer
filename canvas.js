@@ -44,16 +44,17 @@ library.using([
     var canvasHeightInPixels = CANVAS_HEIGHT * PIXEL_SIZE
 
     const mouseMove = baseBridge.defineSingleton(
-      [canvasId, canvasWidthInPixels, canvasHeightInPixels, scene],
-      function handleMouseMove(canvasId, canvasWidthInPixels, canvasHeightInPixels, scene) {
+      [canvasId, canvasWidthInPixels, canvasHeightInPixels, scene, PIXEL_SIZE],
+      function handleMouseMove(canvasId, canvasWidthInPixels, canvasHeightInPixels, scene, PIXEL_SIZE) {
         var rect
-        var coordinates = new Float32Array([
-          -0.5,
-          0.5,
-          -0.5,
-          -0.5,
-          0.0,
-          -0.5])
+
+        function screenToX(n) {
+          return 2*(n/canvasWidthInPixels - 0.4)
+        }
+
+        function screenToY(n) {
+          return -2*(n/canvasHeightInPixels - 0.4)
+        }
 
         function handleMove(event) {
           if (!rect) {
@@ -61,8 +62,24 @@ library.using([
 
           var x = event.clientX - rect.left
           var y = event.clientY - rect.top
-          coordinates[0] = 2 * (x /canvasWidthInPixels - 0.5)
-          coordinates[1] = -2 * (y / canvasHeightInPixels - 0.5)
+
+          x = Math.floor(x/PIXEL_SIZE)*PIXEL_SIZE
+          y = Math.floor(y/PIXEL_SIZE)*PIXEL_SIZE
+
+          var coordinates = new Float32Array([
+            screenToX(x-PIXEL_SIZE),
+            screenToY(y),
+
+            screenToX(x-PIXEL_SIZE),
+            screenToY(y-PIXEL_SIZE),
+
+            screenToX(x),
+            screenToY(y),
+
+            screenToX(x),
+            screenToY(y-PIXEL_SIZE),
+          ])
+
           scene.setCoordinates(coordinates)
           scene.draw()}
 

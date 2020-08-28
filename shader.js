@@ -58,9 +58,9 @@ module.exports = library.export(
       var gl = this.gl
 
       gl.drawArrays(
-        gl.TRIANGLES,
+        gl.TRIANGLE_STRIP,
         0, // first one to start at
-        3) // how many to draw
+        4) // how many to draw
     }
 
     ShaderScene.prototype.setCoordinates = function(coordinates) {
