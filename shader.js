@@ -63,10 +63,13 @@ module.exports = library.export(
         4) // how many to draw
     }
 
-    ShaderScene.prototype.setCoordinates = function(coordinates) {
+    ShaderScene.prototype.assertInit = function() {
       if (!this.gl) {
         throw new Error(
-        "Forgot to call ShaderScene.init")}
+        "Forgot to call ShaderScene.init")}}
+
+    ShaderScene.prototype.setCoordinates = function(coordinates) {
+      this.assertInit()
 
       // Coordinates should be a Float32Array. We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
 
@@ -80,11 +83,12 @@ module.exports = library.export(
       gl.bufferData(
         gl.ARRAY_BUFFER,
         coordinates,
-        gl.STATIC_DRAW)
+        // We are using DYNAMIC_DRAW here because the cursor position will be respecified repeatedly
+        gl.DYNAMIC_DRAW)
 
       // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
       gl.vertexAttribPointer(
-        this.coordinatesAttr,
+        this.coordinatesLocation,
         2, // I assume this sets the chunk size
         gl.FLOAT, // and type
         false, // this would normalize if the type were int, but has no effect on floats
@@ -125,14 +129,15 @@ module.exports = library.export(
 
     function create2dPositionShader(gl) {
       // This is some shader code that takes in whatever input we give it (in this case our six coordinates) and writes out a position by setting the gl_Position variable. A.k.a the "clip-space output position of the current vertex"
-      // All of these gl_ variables are special input and output variables see page 4 of file:///Users/some_eriks/Downloads/webgl-reference-card-1_0.pdf
-      // It looks like this is going to chunk up the input data into vec2s, but the position is a vec4.
-      // Since we're going to stay in flat space for now, the third value, Z, is just 0.0.
-      // The fourth value, W, from a Euclidian perspective, is a scaling value. (1,2,0,0.1) represents (10,20) in Euclidian space. It is also needed for matrix math to work (there has to be something there.) As it gets smaller, you can imagine the point heading out towards infinity, so that's why (1,2,0,0) represents a vector and not a point: it's kind of the point in that direction out at infinity. Explained here http://glprogramming.com/red/appendixf.html
       var VEC2_CHUNK_TO_VEC4 = `
+        // When we call vertexAttribPointer we tell WebGL to chunk coordinates into vec2s, even though we buffer in an array of 6 floats.
         attribute vec2 coordinates;
         void main(void) {
+          // Since we're going to stay in flat space for now, the third value, Z, is just 0.0.
+          // The fourth value, W, from a Euclidian perspective, is a scaling value. (1,2,0,0.1) represents (10,20) in Euclidian space. It is also needed for matrix math to work (there has to be something there.) As it gets smaller, you can imagine the point heading out towards infinity, so that's why (1,2,0,0) represents a vector and not a point: it's kind of the point in that direction out at infinity. Explained here http://glprogramming.com/red/appendixf.html
           gl_Position = vec4(coordinates,0.0, 1.0);
+
+          // All of these gl_ variables are special input and output variables see page 4 of file:///Users/some_eriks/Downloads/webgl-reference-card-1_0.pdf
         }
       `
 
