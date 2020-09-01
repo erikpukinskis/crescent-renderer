@@ -117,7 +117,12 @@ library.using([
         "margin-right": "4px",
         "border": "none",
       }),
-      function(color) {
+      function(r,g,b) {
+        var color = new Float32Array([
+          r/256,
+          g/256,
+          b/256,
+          0.7])
         var rgba = colorToRgba(color)
         function colorToRgba(color) {
           return color.map(
@@ -211,7 +216,6 @@ library.using([
     var zoomBy = baseBridge.defineFunction(
       [getQueryParam, setQueryParam, getZoomTransform],
       function zoomBy(getQueryParam, setQueryParam, getZoomTransform, elementId, zoomIncrement) {
-        debugger
         var zoomLevel = getQueryParam("zoom", parseInt) || 0
         zoomLevel += zoomIncrement
         var element = document.getElementById(
@@ -234,35 +238,25 @@ library.using([
 
     var swatches = [
       colorButton(
-        new Float32Array([
-          184/256,
-          228/256,
-          221/256,
-          0.7])),
+        184,
+        228,
+        221),
       colorButton(
-        new Float32Array([
-          202/256,
-          209/256,
-          203/256,
-          0.7])),
+        202,
+        209,
+        203),
       colorButton(
-        new Float32Array([
-          235/256,
-          181/256,
-          213/256,
-          0.7])),
+        235,
+        181,
+        213),
       colorButton(
-        new Float32Array([
-          195/256,
-          250/256,
-          188/256,
-          0.7])),
+        195,
+        250,
+        188),
       colorButton(
-        new Float32Array([
-          180/256,
-          229/256,
-          171/256,
-          0.7]))]
+        180,
+        229,
+        171)]
 
     site.addRoute(
       "get",
