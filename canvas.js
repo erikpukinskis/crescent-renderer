@@ -109,9 +109,48 @@ library.using([
 
     var drawable = canvas()
 
+    var colorButton = element.template(
+      "button.swatch",
+      element.style({
+        "width": PIXEL_SIZE+"px",
+        "height": PIXEL_SIZE+"px",
+        "margin-right": "4px",
+        "border": "none",
+      }),
+      function(color) {
+        var rgba = colorToRgba(color)
+        function colorToRgba(color) {
+          return color.map(
+            function(component) {
+              return Math.floor(
+                component*256)})
+                .join(
+                  ",")}
+        this.appendStyles({
+          "background": "rgba("
+            +rgba+")"})
+        this.addAttributes({
+          "onclick": brush.methodCall(
+            "pickColor")
+            .withArgs(
+              color)
+              .evalable()})})
+
+    var brush = baseBridge.defineSingleton(
+      [scene],
+      function(scene) {
+        function Brush() {}
+        Brush.prototype.pickColor = function(color) {
+          scene.setBrushColor(
+            color)
+          scene.draw()}
+        return new Brush()})
+
     baseBridge.addToHead(
       element.stylesheet(
-        canvas))
+        canvas,
+        colorButton))
+
     baseBridge.addToHead(
       element(
         "title",
@@ -192,6 +231,38 @@ library.using([
         this.addAttributes({
           "onclick": zoom.evalable()})})
 
+    var swatches = [
+      colorButton(
+        new Float32Array([
+          184/256,
+          228/256,
+          221/256,
+          1])),
+      colorButton(
+        new Float32Array([
+          202/256,
+          209/256,
+          203/256,
+          1])),
+      colorButton(
+        new Float32Array([
+          195/256,
+          250/256,
+          188/256,
+          1])),
+      colorButton(
+        new Float32Array([
+          235/256,
+          181/256,
+          213/256,
+          1])),
+      colorButton(
+        new Float32Array([
+          180/256,
+          229/256,
+          171/256,
+          1]))]
+
     site.addRoute(
       "get",
       "/flurble",
@@ -210,6 +281,9 @@ library.using([
             zoomButton(
               tracingImage.id,
               -1)]),
+          element(
+            "p",
+            swatches),
           element("br"),
           tracingImage,
           drawable])})

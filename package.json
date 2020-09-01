@@ -5,7 +5,8 @@
     "web-element": "*",
     "web-site": "*",
     "bridge-module": "*",
-    "basic-styles": "*"
+    "basic-styles": "*",
+    "function-call": "^0.39.0"
   },
   "scripts": {
     "start": "node start"

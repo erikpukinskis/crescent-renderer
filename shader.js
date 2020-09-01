@@ -15,9 +15,6 @@ module.exports = library.export(
           "experimental-webgl",{
           antialias: false})
 
-        // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
-        this.vertexBuffer = gl.createBuffer()
-
         // The shader program combines them together
         const shaderProgram = createShaderProgram(
           gl)
@@ -26,13 +23,24 @@ module.exports = library.export(
         gl.useProgram(shaderProgram)
 
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
-        var coordinatesAttr = this.coordinatesAttr = gl.getAttribLocation(
+        this.coordinatesLocation = gl.getAttribLocation(
           shaderProgram,
           "coordinates")
 
+        console.log('coordinates is at index', this.coordinatesLocation)
+
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
-          coordinatesAttr)
+          this.coordinatesLocation)
+
+        // Then I think we can do the same thing for the brush color variable
+
+        this.brushColorLocation = gl.getAttribLocation(
+          shaderProgram,
+          "color")
+        console.log('color is at index', this.brushColorLocation)
+        // gl.enableVertexAttribArray(
+          // this.brushColorLocation)
 
         // This is where the draw begins
         gl.clearColor(
@@ -49,6 +57,16 @@ module.exports = library.export(
           0,
           canvas.width,
           canvas.height)
+
+        // Then we're going to need some different buffers to stream data into.
+
+        // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
+        this.vertexBuffer = gl.createBuffer()
+
+        // We'll create different buffers for the brush position and brush color since we write to them at different times.
+        this.brushColorBuffer = gl.createBuffer()
+
+        this.setBrushColor(new Float32Array([1.0, 1.0, 1.0, 0.5]))
     }
 
     ShaderScene.prototype.draw = function() {
@@ -99,6 +117,27 @@ module.exports = library.export(
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
 
+    ShaderScene.prototype.setBrushColor = function(color) {
+      this.assertInit()
+      console.log("setting brush color")
+      var gl = this.gl
+      gl.bindBuffer(
+        gl.ARRAY_BUFFER,
+        this.brushColorBuffer)
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        color,
+        gl.DYNAMIC_DRAW)
+      gl.vertexAttribPointer(
+        this.brushColorLocation,
+        4,
+        gl.FLOAT,
+        false,
+        0,
+        0)
+      gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    }
+
     function createShaderProgram(gl) {
       // The shader program just glues together the vertex and fragment shader so they can work together.
       var shaderProgram = gl.createProgram()
@@ -108,9 +147,8 @@ module.exports = library.export(
         gl)
 
       // The fragment shader renders all of the pixels inside that geometry
-      var fragmentShader = createFillWithGrayShader(
+      var fragmentShader = createFillWithColorShader(
         gl)
-
 
       gl.attachShader(
         shaderProgram,
@@ -132,12 +170,20 @@ module.exports = library.export(
       var VEC2_CHUNK_TO_VEC4 = `
         // When we call vertexAttribPointer we tell WebGL to chunk coordinates into vec2s, even though we buffer in an array of 6 floats.
         attribute vec2 coordinates;
+
+        // We proxy the _color variable along to the fragment shader. That's because fragment shaders can't have attributes of their own, they are interpolated between verticies, so the vertex shader provides all input data to the fragment shader.
+        attribute vec4 color;
+        varying vec4 _color;
+
         void main(void) {
           // Since we're going to stay in flat space for now, the third value, Z, is just 0.0.
           // The fourth value, W, from a Euclidian perspective, is a scaling value. (1,2,0,0.1) represents (10,20) in Euclidian space. It is also needed for matrix math to work (there has to be something there.) As it gets smaller, you can imagine the point heading out towards infinity, so that's why (1,2,0,0) represents a vector and not a point: it's kind of the point in that direction out at infinity. Explained here http://glprogramming.com/red/appendixf.html
           gl_Position = vec4(coordinates,0.0, 1.0);
 
           // All of these gl_ variables are special input and output variables see page 4 of file:///Users/some_eriks/Downloads/webgl-reference-card-1_0.pdf
+
+          // We just proxy the color along to for fragment shader to use since fragment shaders can't have their own separate attributes
+          _color = color;
         }
       `
 
@@ -157,10 +203,23 @@ module.exports = library.export(
       return vertexShader
     }
 
-    function createFillWithGrayShader(gl) {
+    // OK this is a pretty interesting spot now. Which I guess is the point of this project: to get to interesting places.
+
+    // So, I had all this working with one buffer. But I want two buffers, one for the color and one for the position. And I had to make quite a few changes to get that set up, and it just doesn't work. I get:
+
+    //  ERROR :GL_INVALID_OPERATION : glDrawArrays: attempt to access out of range vertices in attribute 1
+
+    // First off, I don't know what attribute 1 is... I kinda want to set a custom attribute index for each of my buffers to make it easier to debug. But I also want to keep these changes as atomic as possible so I'm gonna assume it's the color buffer for now, and maybe if I get stuck I'll do custom indexes.
+
+    // I think the best path is just to try to get the old setup working again, with as much of the new code in place as possible, just to verify that all that stuff is still working.
+
+    function createFillWithColorShader(gl) {
       // A fragment shader writes out color data for the pixel. This one has no inputs, and just returns a fixed value, but it could do lots of fancy stuff.
       var FILL_WITH_GRAY = `
+        varying mediump vec4 _color;
+
         void main(void) {
+          // gl_FragColor = _color;
           gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);
         }
       `
