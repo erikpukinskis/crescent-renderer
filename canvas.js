@@ -237,31 +237,31 @@ library.using([
           184/256,
           228/256,
           221/256,
-          1])),
+          0.7])),
       colorButton(
         new Float32Array([
           202/256,
           209/256,
           203/256,
-          1])),
-      colorButton(
-        new Float32Array([
-          195/256,
-          250/256,
-          188/256,
-          1])),
+          0.7])),
       colorButton(
         new Float32Array([
           235/256,
           181/256,
           213/256,
-          1])),
+          0.7])),
+      colorButton(
+        new Float32Array([
+          195/256,
+          250/256,
+          188/256,
+          0.7])),
       colorButton(
         new Float32Array([
           180/256,
           229/256,
           171/256,
-          1]))]
+          0.7]))]
 
     site.addRoute(
       "get",

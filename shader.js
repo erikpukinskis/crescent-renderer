@@ -22,6 +22,16 @@ module.exports = library.export(
         // useProgram is similar to bindBuffer, since we can only have one program going at a time we need to tell OpenGL which is up.
         gl.useProgram(shaderProgram)
 
+
+        // COORDINATES BUFFER
+
+        // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
+        this.coordinatesBuffer = gl.createBuffer()
+
+        gl.bindBuffer(
+          gl.ARRAY_BUFFER,
+          this.coordinatesBuffer)
+
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
         this.coordinatesLocation = gl.getAttribLocation(
           shaderProgram,
@@ -33,14 +43,28 @@ module.exports = library.export(
         gl.enableVertexAttribArray(
           this.coordinatesLocation)
 
+
+        // COLOR BUFFER
+
         // Then I think we can do the same thing for the brush color variable
+
+        // We'll create different buffers for the brush position and brush color since we write to them at different times.
+        this.brushColorBuffer = gl.createBuffer()
+
+        gl.bindBuffer(
+          gl.ARRAY_BUFFER,
+          this.brushColorBuffer)
 
         this.brushColorLocation = gl.getAttribLocation(
           shaderProgram,
           "color")
-        console.log('color is at index', this.brushColorLocation)
-        // gl.enableVertexAttribArray(
-          // this.brushColorLocation)
+
+        gl.enableVertexAttribArray(
+          this.brushColorLocation)
+
+        console.log(
+          "color is at index",
+          this.brushColorLocation)
 
         // This is where the draw begins
         gl.clearColor(
@@ -57,14 +81,6 @@ module.exports = library.export(
           0,
           canvas.width,
           canvas.height)
-
-        // Then we're going to need some different buffers to stream data into.
-
-        // There are three commands that you need to send to a actually write data into a buffer: create, bind, and buffer. First we create:
-        this.vertexBuffer = gl.createBuffer()
-
-        // We'll create different buffers for the brush position and brush color since we write to them at different times.
-        this.brushColorBuffer = gl.createBuffer()
 
         this.setBrushColor(new Float32Array([1.0, 1.0, 1.0, 0.5]))
     }
@@ -96,13 +112,7 @@ module.exports = library.export(
       // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
       gl.bindBuffer(
         gl.ARRAY_BUFFER,
-        this.vertexBuffer)
-
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        coordinates,
-        // We are using DYNAMIC_DRAW here because the cursor position will be respecified repeatedly
-        gl.DYNAMIC_DRAW)
+        this.coordinatesBuffer)
 
       // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
       gl.vertexAttribPointer(
@@ -113,21 +123,25 @@ module.exports = library.export(
         0, // I think this could be a gap between each chunk
         0) // and this could specify where to start in the array coordinate array we passed in
 
-      // At this point the data seems to be configured properly, so we ca unbind it (by bunding null)
+      // It doesn't matter if we do this before or after the gl.vertexAttribPointer
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        coordinates,
+        // We are using DYNAMIC_DRAW here because the cursor position will be respecified repeatedly
+        gl.DYNAMIC_DRAW)
+
+      // At this point the data seems to be configured properly, so we can unbind it (by binding null)
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
 
     ShaderScene.prototype.setBrushColor = function(color) {
       this.assertInit()
-      console.log("setting brush color")
       var gl = this.gl
+
       gl.bindBuffer(
         gl.ARRAY_BUFFER,
         this.brushColorBuffer)
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        color,
-        gl.DYNAMIC_DRAW)
+
       gl.vertexAttribPointer(
         this.brushColorLocation,
         4,
@@ -135,6 +149,18 @@ module.exports = library.export(
         false,
         0,
         0)
+
+      var four = new Float32Array(16)
+      four.set(color, 0)
+      four.set(color, 4)
+      four.set(color, 8)
+      four.set(color, 12)
+
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        four,
+        gl.DYNAMIC_DRAW)
+
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
 
@@ -219,8 +245,8 @@ module.exports = library.export(
         varying mediump vec4 _color;
 
         void main(void) {
-          // gl_FragColor = _color;
-          gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);
+          gl_FragColor = _color;
+          // gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);
         }
       `
 
