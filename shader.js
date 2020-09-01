@@ -37,6 +37,15 @@ module.exports = library.export(
           shaderProgram,
           "coordinates")
 
+        // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
+        gl.vertexAttribPointer(
+          this.coordinatesLocation,
+          2, // I assume this sets the chunk size
+          gl.FLOAT, // and type
+          false, // this would normalize if the type were int, but has no effect on floats
+          0, // I think this could be a gap between each chunk
+          0) // and this could specify where to start in the array coordinate array we passed in
+
         console.log('coordinates is at index', this.coordinatesLocation)
 
         // This I guess just turns that attribute on
@@ -58,6 +67,14 @@ module.exports = library.export(
         this.brushColorLocation = gl.getAttribLocation(
           shaderProgram,
           "color")
+
+        gl.vertexAttribPointer(
+          this.brushColorLocation,
+          4,
+          gl.FLOAT,
+          false,
+          0,
+          0)
 
         gl.enableVertexAttribArray(
           this.brushColorLocation)
@@ -114,15 +131,6 @@ module.exports = library.export(
         gl.ARRAY_BUFFER,
         this.coordinatesBuffer)
 
-      // Not sure exactly what's happening here, but we definitely need to have the buffer bound before we get here...
-      gl.vertexAttribPointer(
-        this.coordinatesLocation,
-        2, // I assume this sets the chunk size
-        gl.FLOAT, // and type
-        false, // this would normalize if the type were int, but has no effect on floats
-        0, // I think this could be a gap between each chunk
-        0) // and this could specify where to start in the array coordinate array we passed in
-
       // It doesn't matter if we do this before or after the gl.vertexAttribPointer
       gl.bufferData(
         gl.ARRAY_BUFFER,
@@ -142,14 +150,7 @@ module.exports = library.export(
         gl.ARRAY_BUFFER,
         this.brushColorBuffer)
 
-      gl.vertexAttribPointer(
-        this.brushColorLocation,
-        4,
-        gl.FLOAT,
-        false,
-        0,
-        0)
-
+      // We need four copies of this color because there needs to be one for each vertex.
       var four = new Float32Array(16)
       four.set(color, 0)
       four.set(color, 4)
