@@ -136,11 +136,33 @@ library.using([
               color)
               .evalable()})})
 
+    var setQueryParam = baseBridge.defineFunction(
+      function setQueryParam(key, value) {
+        var params = new URLSearchParams(
+          document.location.search)
+        params.set(key, value)
+        history.replaceState(
+          null,
+          null,
+          "?"+params.toString())})
+
+    var getQueryParam = baseBridge.defineFunction(
+      function getQueryParam(key, sanitize) {
+        var params = new URLSearchParams(
+          document.location.search)
+        var string = params.get(
+          key)
+        if (sanitize) {
+          return sanitize(string)
+        } else {
+          return string}})
+
     var brush = baseBridge.defineSingleton(
-      [scene],
-      function(scene) {
+      [scene, setQueryParam],
+      function(scene, setQueryParam) {
         function Brush() {}
         Brush.prototype.pickColor = function(color) {
+          setQueryParam("color", color.join('**'))
           scene.setBrushColor(
             color)
           scene.draw()}
@@ -174,27 +196,6 @@ library.using([
     baseBridge.addToHead(
       element.stylesheet([
         tracer]))
-
-    var setQueryParam = baseBridge.defineFunction(
-      function setQueryParam(key, value) {
-        var params = new URLSearchParams(
-          document.location.search)
-        params.set(key, value)
-        history.replaceState(
-          null,
-          null,
-          "?"+params.toString())})
-
-    var getQueryParam = baseBridge.defineFunction(
-      function getQueryParam(key, sanitize) {
-        var params = new URLSearchParams(
-          document.location.search)
-        var string = params.get(
-          key)
-        if (sanitize) {
-          return sanitize(string)
-        } else {
-          return string}})
 
     function getZoomTransform(zoomLevel) {
       var scale
@@ -268,9 +269,19 @@ library.using([
       "/flurble",
       function(request, response) {
         var zoomLevel = request.query.zoom
+        var colorParam = request.query.color
+        var color = new Float32Array(colorParam.split("**"))
         var bridge = baseBridge.forResponse(
           response)
         var tracingImage = tracer(zoomLevel)
+
+        if (color.length === 4) {
+          bridge.domReady(
+            scene.methodCall(
+              "setBrushColor")
+              .withArgs(
+                color))}
+
         bridge.send([
           element(
           "p",[
