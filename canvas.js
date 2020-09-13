@@ -15,6 +15,12 @@ library.using([
     basicStyles.addTo(baseBridge)
     var site = new WebSite()
 
+    baseBridge.addToHead(
+      element.stylesheet(
+        element.style(
+          "body",{
+            "margin": "0"})))
+
     const canvasId = element.anId()
 
     const scene = baseBridge.defineSingleton(
@@ -36,9 +42,10 @@ library.using([
           canvasId)
         scene.init(canvas)})
 
-    var PIXEL_SIZE = 64
-    var CANVAS_WIDTH = 8
-    var CANVAS_HEIGHT = 6
+    var ZOOM = 1
+    var PIXEL_SIZE = 64/ZOOM
+    var CANVAS_WIDTH = 8*ZOOM
+    var CANVAS_HEIGHT = 6*ZOOM
 
     var canvasWidthInPixels = CANVAS_WIDTH * PIXEL_SIZE
     var canvasHeightInPixels = CANVAS_HEIGHT * PIXEL_SIZE
@@ -49,11 +56,17 @@ library.using([
         var rect
 
         function screenToX(n) {
-          return 2*(n/canvasWidthInPixels - 0.4)
+          n = n+PIXEL_SIZE
+          n = 2*n/canvasWidthInPixels
+          n = n - 1
+          return n
         }
 
         function screenToY(n) {
-          return -2*(n/canvasHeightInPixels - 0.4)
+          n = n+PIXEL_SIZE
+          n = -2*n/canvasHeightInPixels
+          n = n + 1
+          return n
         }
 
         function handleMove(event) {
