@@ -129,13 +129,14 @@ library.using([
         "height": PIXEL_SIZE+"px",
         "margin-right": "4px",
         "border": "none",
+        "opacity": "0.6",
       }),
       function(r,g,b) {
         var color = new Float32Array([
           r/256,
           g/256,
           b/256,
-          0.7])
+          0.4])
         var rgba = colorToRgba(color)
         function colorToRgba(color) {
           return color.map(
@@ -251,25 +252,25 @@ library.using([
 
     var swatches = [
       colorButton(
-        184,
-        228,
-        221),
+        56,
+        148,
+        133),
       colorButton(
+        58,
+        76,
+        146),
+      colorButton(
+        160,
+        44,
+        114),
+      colorButton(
+        35,
         190,
-        198,
-        229),
+        14),
       colorButton(
-        235,
-        181,
-        213),
-      colorButton(
-        195,
-        250,
-        188),
-      colorButton(
-        180,
-        229,
-        171)]
+        150,
+        219,
+        138)]
 
     site.addRoute(
       "get",
