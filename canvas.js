@@ -50,17 +50,39 @@ library.using([
     var canvasWidthInPixels = CANVAS_WIDTH * GLOB_SIZE
     var canvasHeightInPixels = CANVAS_HEIGHT * GLOB_SIZE
 
-    const strokes = baseBridge.defineSingleton(
-      function() {
-        function Strokes() {
-          this.strokes = []}
+    const globs = baseBridge.defineSingleton(
+      [GLOB_SIZE],
+      function(GLOB_SIZE) {
+        function Globs() {
+          this.globs = []}
 
-        Strokes.start = function(x,y) {
-          this.strokes.push({
-            "x": x,
-            "y": y})}
+        Globs.prototype.activeGlob = function() {
+          if (this.activeGlobIndex != null) {
+            return this.globs[
+              this.activeGlobIndex]}}
 
-        return new Strokes()})
+        Globs.prototype.start = function(rectX,rectY) {
+          this.activeGlobIndex = this.globs.length
+          this.activeGlobStartRectX = rectX
+          this.activeGlobStartRectY = rectY
+          this.globs.push({
+            "x": Math.floor(rectX/GLOB_SIZE),
+            "y": Math.floor(rectY/GLOB_SIZE),
+            "nudgeX": 0,
+            "nudgeY": 0})}
+
+        Globs.prototype.nudge = function(rectX,rectY) {
+          var dx = rectX - this.activeGlobStartRectX
+          var dy = rectY - this.activeGlobStartRectY
+
+          this.globs[this.activeGlobIndex].nudgeX = dx/GLOB_SIZE
+          this.globs[this.activeGlobIndex].nudgeY = dy/GLOB_SIZE}
+
+        Globs.prototype.end = function() {
+          this.activeGlobIndex = undefined
+          console.log("new glob!", this.globs)}
+
+        return new Globs()})
 
     var globXToCanvasX = baseBridge.defineFunction(
       [GLOB_SIZE, canvasWidthInPixels],
@@ -80,35 +102,65 @@ library.using([
         return canvasX
       })
 
-    var mouseMove = baseBridge.defineFunction(
-      [scene, globXToCanvasX, globYToCanvasY],
-      function handleMouseMove(scene, globXToCanvasX, globYToCanvasY, event) {
+    var brushDown = baseBridge.defineFunction([
+      scene,
+      globs],
+      function(scene, globs, event) {
+        globs.start(
+          event.getRectX(),
+          event.getRectY())
+      })
 
-        globXToCanvasX(
-          event.getGlobX())
-        globYToCanvasY(
-          event.getGlobY())
+    var brushUp = baseBridge.defineFunction([
+      scene,
+      globs],
+      function(scene, globs, event) {
+        globs.end()
+      })
+
+
+    var mouseMove = baseBridge.defineFunction([
+      scene,
+      globs,
+      globXToCanvasX,
+      globYToCanvasY],
+      function handleMouseMove(scene, globs, globXToCanvasX, globYToCanvasY, event) {
+
+        var x
+        var y
+
+        var activeGlob = globs.activeGlob()
+        if (activeGlob) {
+          globs.nudge(
+            event.getRectX(),
+            event.getRectY())
+          x = activeGlob.x + activeGlob.nudgeX
+          y = activeGlob.y + activeGlob.nudgeY
+        } else {
+          x = event.getGlobX()
+          y = event.getGlobY()
+        }
 
         var coordinates = new Float32Array([
           globXToCanvasX(
-            event.getGlobX() - 1),
+            x - 1),
           globYToCanvasY(
-            event.getGlobY()),
+            y),
 
           globXToCanvasX(
-            event.getGlobX() - 1),
+            x - 1),
           globYToCanvasY(
-            event.getGlobY() - 1),
+            y - 1),
 
           globXToCanvasX(
-            event.getGlobX()),
+            x),
           globYToCanvasY(
-            event.getGlobY()),
+            y),
 
           globXToCanvasX(
-            event.getGlobX()),
+            x),
           globYToCanvasY(
-            event.getGlobY() - 1),
+            y - 1),
         ])
 
         scene.setCoordinates(coordinates)
@@ -166,9 +218,9 @@ library.using([
       "canvas.canvas",{
       "id": canvasId,
       "onmousemove": canvasEvent.withArgs(
-        mouseMove,
-        BrowserBridge.event)
-        .evalable(),
+        mouseMove, BrowserBridge.event).evalable(),
+      "onmousedown": canvasEvent.withArgs(brushDown, BrowserBridge.event).evalable(),
+      "onmouseup": canvasEvent.withArgs(brushUp, BrowserBridge.event).evalable(),
       "onmouseout": setBrushVisible.withArgs(
         false)
         .evalable(),
