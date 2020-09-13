@@ -43,79 +43,130 @@ library.using([
         scene.init(canvas)})
 
     var ZOOM = 1
-    var PIXEL_SIZE = 64/ZOOM
+    var GLOB_SIZE = 64/ZOOM
     var CANVAS_WIDTH = 8*ZOOM
     var CANVAS_HEIGHT = 6*ZOOM
 
-    var canvasWidthInPixels = CANVAS_WIDTH * PIXEL_SIZE
-    var canvasHeightInPixels = CANVAS_HEIGHT * PIXEL_SIZE
+    var canvasWidthInPixels = CANVAS_WIDTH * GLOB_SIZE
+    var canvasHeightInPixels = CANVAS_HEIGHT * GLOB_SIZE
 
-    const mouseMove = baseBridge.defineSingleton(
-      [canvasId, canvasWidthInPixels, canvasHeightInPixels, scene, PIXEL_SIZE],
-      function handleMouseMove(canvasId, canvasWidthInPixels, canvasHeightInPixels, scene, PIXEL_SIZE) {
+    const strokes = baseBridge.defineSingleton(
+      function() {
+        function Strokes() {
+          this.strokes = []}
+
+        Strokes.start = function(x,y) {
+          this.strokes.push({
+            "x": x,
+            "y": y})}
+
+        return new Strokes()})
+
+    var globXToCanvasX = baseBridge.defineFunction(
+      [GLOB_SIZE, canvasWidthInPixels],
+      function globXToCanvasX(GLOB_SIZE, canvasWidthInPixels, globs) {
+        var pixels = globs * GLOB_SIZE
+        pixels = pixels + GLOB_SIZE
+        var canvasX = 2*pixels/canvasWidthInPixels - 1
+        return canvasX
+      })
+
+    var globYToCanvasY = baseBridge.defineFunction(
+      [GLOB_SIZE, canvasHeightInPixels],
+      function globYToCanvasY(GLOB_SIZE, canvasHeightInPixels, globs) {
+        var pixels = globs * GLOB_SIZE
+        pixels = pixels + GLOB_SIZE
+        var canvasX = -2*pixels/canvasHeightInPixels + 1
+        return canvasX
+      })
+
+    var mouseMove = baseBridge.defineFunction(
+      [scene, globXToCanvasX, globYToCanvasY],
+      function handleMouseMove(scene, globXToCanvasX, globYToCanvasY, event) {
+
+        globXToCanvasX(
+          event.getGlobX())
+        globYToCanvasY(
+          event.getGlobY())
+
+        var coordinates = new Float32Array([
+          globXToCanvasX(
+            event.getGlobX() - 1),
+          globYToCanvasY(
+            event.getGlobY()),
+
+          globXToCanvasX(
+            event.getGlobX() - 1),
+          globYToCanvasY(
+            event.getGlobY() - 1),
+
+          globXToCanvasX(
+            event.getGlobX()),
+          globYToCanvasY(
+            event.getGlobY()),
+
+          globXToCanvasX(
+            event.getGlobX()),
+          globYToCanvasY(
+            event.getGlobY() - 1),
+        ])
+
+        scene.setCoordinates(coordinates)
+        scene.draw()})
+
+    var canvasEvent = baseBridge.defineFunction(
+      [canvasId, canvasWidthInPixels, canvasHeightInPixels, GLOB_SIZE],
+      function canvasEvent(canvasId, canvasWidthInPixels, canvasHeightInPixels, GLOB_SIZE, callback, mouseEvent) {
+
         var rect
 
-        function screenToX(n) {
-          n = n+PIXEL_SIZE
-          n = 2*n/canvasWidthInPixels
-          n = n - 1
-          return n
-        }
-
-        function screenToY(n) {
-          n = n+PIXEL_SIZE
-          n = -2*n/canvasHeightInPixels
-          n = n + 1
-          return n
-        }
-
-        function handleMove(event) {
+        function getRect() {
           if (!rect) {
-            getBoundingClientRect()}
-
-          var x = event.clientX - rect.left
-          var y = event.clientY - rect.top
-
-          x = Math.floor(x/PIXEL_SIZE)*PIXEL_SIZE
-          y = Math.floor(y/PIXEL_SIZE)*PIXEL_SIZE
-
-          var coordinates = new Float32Array([
-            screenToX(x-PIXEL_SIZE),
-            screenToY(y),
-
-            screenToX(x-PIXEL_SIZE),
-            screenToY(y-PIXEL_SIZE),
-
-            screenToX(x),
-            screenToY(y),
-
-            screenToX(x),
-            screenToY(y-PIXEL_SIZE),
-          ])
-
-          scene.setCoordinates(coordinates)
-          scene.draw()}
-
-        function getBoundingClientRect() {
-          var canvas = document.getElementById(
+            var canvas = document.getElementById(
             canvasId)
-          var gl = canvas.getContext(
-            'experimental-webgl')
-          rect = gl.canvas.getBoundingClientRect()}
+            var gl = canvas.getContext(
+              'experimental-webgl')
+            rect = gl.canvas.getBoundingClientRect()}
+          return rect}
 
-        return handleMove})
+
+        function CanvasEvent(mouseEvent) {
+          this._event = mouseEvent
+        }
+
+
+        CanvasEvent.prototype.getRectX = function() {
+          return this._event.clientX - getRect().left
+        }
+
+        CanvasEvent.prototype.getRectY = function() {
+          return this._event.clientY - getRect().top
+        }
+
+        CanvasEvent.prototype.getGlobX = function() {
+          return Math.floor(this.getRectX()/GLOB_SIZE)
+        }
+
+        CanvasEvent.prototype.getGlobY = function() {
+          return Math.floor(this.getRectY()/GLOB_SIZE)
+        }
+
+        const canvasEvent = new CanvasEvent(mouseEvent)
+
+        callback(canvasEvent)
+      })
 
     var setBrushVisible = baseBridge.defineFunction([
       scene],
       function(scene, isVisible) {
-        console.log("brush is visible", isVisible)
         scene.setBrushVisible(isVisible)
         scene.draw()})
 
     var canvas = element.template(
       "canvas.canvas",{
       "id": canvasId,
-      "onmousemove": mouseMove.withArgs(
+      "onmousemove": canvasEvent.withArgs(
+        mouseMove,
         BrowserBridge.event)
         .evalable(),
       "onmouseout": setBrushVisible.withArgs(
@@ -138,8 +189,8 @@ library.using([
     var colorButton = element.template(
       "button.swatch",
       element.style({
-        "width": PIXEL_SIZE+"px",
-        "height": PIXEL_SIZE+"px",
+        "width": GLOB_SIZE+"px",
+        "height": GLOB_SIZE+"px",
         "margin-right": "4px",
         "border": "none",
         "opacity": "0.6",
