@@ -10,6 +10,8 @@ module.exports = library.export(
 
     // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
 
+    ShaderScene.prototype.brushIsVisible = false
+
     ShaderScene.prototype.init = function(canvas) {
         var gl = this.gl = canvas.getContext(
           "experimental-webgl",{
@@ -85,10 +87,10 @@ module.exports = library.export(
 
         // This is where the draw begins
         gl.clearColor(
-          0.5,
-          0.5,
-          0.5,
-          0.9)
+          0,
+          0,
+          0,
+          0)
 
         gl.enable(
           gl.DEPTH_TEST)
@@ -108,10 +110,14 @@ module.exports = library.export(
           "Forgot to call ShaderScene.init")}
       var gl = this.gl
 
-      gl.drawArrays(
-        gl.TRIANGLE_STRIP,
-        0, // first one to start at
-        4) // how many to draw
+      if (!this.brushIsVisible) {
+        gl.clear(
+          gl.COLOR_BUFFER_BIT)}
+      else {
+        gl.drawArrays(
+          gl.TRIANGLE_STRIP,
+          0, // first one to start at
+          4)} // how many to draw
     }
 
     ShaderScene.prototype.assertInit = function() {
@@ -140,6 +146,10 @@ module.exports = library.export(
 
       // At this point the data seems to be configured properly, so we can unbind it (by binding null)
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    }
+
+    ShaderScene.prototype.setBrushVisible = function(isVisible) {
+      this.brushIsVisible = isVisible
     }
 
     ShaderScene.prototype.setBrushColor = function(color) {

@@ -92,11 +92,24 @@ library.using([
 
         return handleMove})
 
+    var setBrushVisible = baseBridge.defineFunction([
+      scene],
+      function(scene, isVisible) {
+        console.log("brush is visible", isVisible)
+        scene.setBrushVisible(isVisible)
+        scene.draw()})
+
     var canvas = element.template(
       "canvas.canvas",{
       "id": canvasId,
       "onmousemove": mouseMove.withArgs(
         BrowserBridge.event)
+        .evalable(),
+      "onmouseout": setBrushVisible.withArgs(
+        false)
+        .evalable(),
+      "onmouseenter": setBrushVisible.withArgs(
+        true)
         .evalable()},
       element.style({
         "position": "absolute",
@@ -242,9 +255,9 @@ library.using([
         228,
         221),
       colorButton(
-        202,
-        209,
-        203),
+        190,
+        198,
+        229),
       colorButton(
         235,
         181,
