@@ -2,6 +2,9 @@ var library = require("module-library")(require)
 
 // Very interesting discussion of vector performance: https://github.com/toji/gl-matrix/issues/359
 
+// glBufferSubData is only if you want to replace data; to resize the buffer instead, you have to call glBufferData
+
+
 module.exports = library.export(
   "shader",
   function() {
@@ -61,6 +64,32 @@ module.exports = library.export(
 
         // We'll create different buffers for the brush position and brush color since we write to them at different times.
         this.brushColorBuffer = gl.createBuffer()
+
+        // OK, so I am at a bit of a crossroads. I am using these two buffers, the color buffer and the vertex buffer. And I an overwriting each one when the data changes.
+
+        // But I am pretty sure every vertex just needs a color.
+
+        // And this setup doesn't have an obvious third path for persistent pixels.
+
+        // There are three levels of frequency of data change here: cursor position changes frequently, points are added often, and color is changed rarely.
+
+        // Part of me is inclined to just be like... there's a buffer for all the points and colors, and every time anything changes you have to buffer in the entire data set.
+
+        // But another part of me is like... no, that's just stupid and wasteful and the point of this project is not to be wasteful. I maybe should stream in the points every time I add a persistent pixel, but not every time the mouse moves.
+
+        // The counterpoint is that these two files are already getting kinda big. I have 300 lines in shader.js and 400+ lines in canvas.js, and so we're fast approaching...
+
+        // Well onneMi-4211 says modules should be 150 lines! So we're already overdue for some kind of split in both modules.
+
+        // So that makes part of me think: just commit to an abstraction of a point stream that you rebuffer. That certainly will work up to a point.
+
+        // But there are other paths. For one thing, we could have the cursor on a totally separate canvas from the painting. That would let me abstract a ton of crap out from shader.js, and potentially also provide a clear slice in canvas.js. Basically everything I've done so far has been cursor related, so this might be a great moment to abstract something and end up with three four modules instead of 2 (shader, canvas, cursor, painting)
+
+        // But another part of me thinks there's something to aim for here around direct manipulation. Maybe it seems obvious that the cursor is separate from the painting, but couldn't it also just be "more paint"?
+
+        // Someday maybe the entire world will want to be reactive on the 10ms level. Maybe the cursor shouldn't be "a pixel" at all, it should be some data that's streamed into the graphics card and any and all of the pixels can respond to it.
+
+        // I don't know.
 
         gl.bindBuffer(
           gl.ARRAY_BUFFER,

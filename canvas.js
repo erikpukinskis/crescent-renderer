@@ -3,240 +3,28 @@ var library = require("module-library")(require)
 // flowers look like this: https://youtu.be/GbWMw249xY8?t=496
 
 library.using([
+  library.ref(),
   "browser-bridge",
   "web-site",
   "web-element",
   "bridge-module",
   "./shader",
-  "basic-styles"],
-  function(BrowserBridge, WebSite, element, bridgeModule, _, basicStyles) {
+  "basic-styles",
+  "./brush"],
+  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, basicStyles, brush) {
 
     var baseBridge = new BrowserBridge()
     basicStyles.addTo(baseBridge)
     var site = new WebSite()
-
-    baseBridge.addToHead(
-      element.stylesheet(
-        element.style(
-          "body",{
-            "margin": "0"})))
-
-    const canvasId = element.anId()
-
-    const scene = baseBridge.defineSingleton(
-      'scene',[
-      canvasId,
-      bridgeModule(
-        library,
-        "./shader",
-        baseBridge)],
-      function(canvasId, ShaderScene) {
-        return new ShaderScene()
-      })
-
-    baseBridge.domReady([
-      canvasId,
-      scene],
-      function initScene(canvasId, scene) {
-        var canvas = document.getElementById(
-          canvasId)
-        scene.init(canvas)})
 
     var ZOOM = 1
     var GLOB_SIZE = 64/ZOOM
     var CANVAS_WIDTH = 8*ZOOM
     var CANVAS_HEIGHT = 6*ZOOM
 
+    // These two vars are dupliated in brush.js, which is questionable:
     var canvasWidthInPixels = CANVAS_WIDTH * GLOB_SIZE
     var canvasHeightInPixels = CANVAS_HEIGHT * GLOB_SIZE
-
-    const globs = baseBridge.defineSingleton(
-      [GLOB_SIZE],
-      function(GLOB_SIZE) {
-        function Globs() {
-          this.globs = []}
-
-        Globs.prototype.activeGlob = function() {
-          if (this.activeGlobIndex != null) {
-            return this.globs[
-              this.activeGlobIndex]}}
-
-        Globs.prototype.start = function(rectX,rectY) {
-          this.activeGlobIndex = this.globs.length
-          this.activeGlobStartRectX = rectX
-          this.activeGlobStartRectY = rectY
-          this.globs.push({
-            "x": Math.floor(rectX/GLOB_SIZE),
-            "y": Math.floor(rectY/GLOB_SIZE),
-            "nudgeX": 0,
-            "nudgeY": 0})}
-
-        Globs.prototype.nudge = function(rectX,rectY) {
-          var dx = rectX - this.activeGlobStartRectX
-          var dy = rectY - this.activeGlobStartRectY
-
-          this.globs[this.activeGlobIndex].nudgeX = dx/GLOB_SIZE
-          this.globs[this.activeGlobIndex].nudgeY = dy/GLOB_SIZE}
-
-        Globs.prototype.end = function() {
-          this.activeGlobIndex = undefined
-          console.log("new glob!", this.globs)}
-
-        return new Globs()})
-
-    var globXToCanvasX = baseBridge.defineFunction(
-      [GLOB_SIZE, canvasWidthInPixels],
-      function globXToCanvasX(GLOB_SIZE, canvasWidthInPixels, globs) {
-        var pixels = globs * GLOB_SIZE
-        pixels = pixels + GLOB_SIZE
-        var canvasX = 2*pixels/canvasWidthInPixels - 1
-        return canvasX
-      })
-
-    var globYToCanvasY = baseBridge.defineFunction(
-      [GLOB_SIZE, canvasHeightInPixels],
-      function globYToCanvasY(GLOB_SIZE, canvasHeightInPixels, globs) {
-        var pixels = globs * GLOB_SIZE
-        pixels = pixels + GLOB_SIZE
-        var canvasX = -2*pixels/canvasHeightInPixels + 1
-        return canvasX
-      })
-
-    var brushDown = baseBridge.defineFunction([
-      scene,
-      globs],
-      function(scene, globs, event) {
-        globs.start(
-          event.getRectX(),
-          event.getRectY())
-      })
-
-    var brushUp = baseBridge.defineFunction([
-      scene,
-      globs],
-      function(scene, globs, event) {
-        globs.end()
-      })
-
-
-    var mouseMove = baseBridge.defineFunction([
-      scene,
-      globs,
-      globXToCanvasX,
-      globYToCanvasY],
-      function handleMouseMove(scene, globs, globXToCanvasX, globYToCanvasY, event) {
-
-        var x
-        var y
-
-        var activeGlob = globs.activeGlob()
-        if (activeGlob) {
-          globs.nudge(
-            event.getRectX(),
-            event.getRectY())
-          x = activeGlob.x + activeGlob.nudgeX
-          y = activeGlob.y + activeGlob.nudgeY
-        } else {
-          x = event.getGlobX()
-          y = event.getGlobY()
-        }
-
-        var coordinates = new Float32Array([
-          globXToCanvasX(
-            x - 1),
-          globYToCanvasY(
-            y),
-
-          globXToCanvasX(
-            x - 1),
-          globYToCanvasY(
-            y - 1),
-
-          globXToCanvasX(
-            x),
-          globYToCanvasY(
-            y),
-
-          globXToCanvasX(
-            x),
-          globYToCanvasY(
-            y - 1),
-        ])
-
-        scene.setCoordinates(coordinates)
-        scene.draw()})
-
-    var canvasEvent = baseBridge.defineFunction(
-      [canvasId, canvasWidthInPixels, canvasHeightInPixels, GLOB_SIZE],
-      function canvasEvent(canvasId, canvasWidthInPixels, canvasHeightInPixels, GLOB_SIZE, callback, mouseEvent) {
-
-        var rect
-
-        function getRect() {
-          if (!rect) {
-            var canvas = document.getElementById(
-            canvasId)
-            var gl = canvas.getContext(
-              'experimental-webgl')
-            rect = gl.canvas.getBoundingClientRect()}
-          return rect}
-
-
-        function CanvasEvent(mouseEvent) {
-          this._event = mouseEvent
-        }
-
-
-        CanvasEvent.prototype.getRectX = function() {
-          return this._event.clientX - getRect().left
-        }
-
-        CanvasEvent.prototype.getRectY = function() {
-          return this._event.clientY - getRect().top
-        }
-
-        CanvasEvent.prototype.getGlobX = function() {
-          return Math.floor(this.getRectX()/GLOB_SIZE)
-        }
-
-        CanvasEvent.prototype.getGlobY = function() {
-          return Math.floor(this.getRectY()/GLOB_SIZE)
-        }
-
-        const canvasEvent = new CanvasEvent(mouseEvent)
-
-        callback(canvasEvent)
-      })
-
-    var setBrushVisible = baseBridge.defineFunction([
-      scene],
-      function(scene, isVisible) {
-        scene.setBrushVisible(isVisible)
-        scene.draw()})
-
-    var canvas = element.template(
-      "canvas.canvas",{
-      "id": canvasId,
-      "onmousemove": canvasEvent.withArgs(
-        mouseMove, BrowserBridge.event).evalable(),
-      "onmousedown": canvasEvent.withArgs(brushDown, BrowserBridge.event).evalable(),
-      "onmouseup": canvasEvent.withArgs(brushUp, BrowserBridge.event).evalable(),
-      "onmouseout": setBrushVisible.withArgs(
-        false)
-        .evalable(),
-      "onmouseenter": setBrushVisible.withArgs(
-        true)
-        .evalable()},
-      element.style({
-        "position": "absolute",
-        "background": "rgba(0,0,0,0.05)",
-        "border": "none"}),
-      function() {
-        this.addAttributes({
-          "width": canvasWidthInPixels+"px",
-          "height": canvasHeightInPixels+"px"})})
-
-    var drawable = canvas()
 
     var colorButton = element.template(
       "button.swatch",
@@ -247,7 +35,7 @@ library.using([
         "border": "none",
         "opacity": "0.6",
       }),
-      function(r,g,b) {
+      function(pickColor, r,g,b) {
         var color = new Float32Array([
           r/256,
           g/256,
@@ -265,8 +53,7 @@ library.using([
           "background": "rgba("
             +rgba+")"})
         this.addAttributes({
-          "onclick": brush.methodCall(
-            "pickColor")
+          "onclick": pickColor
             .withArgs(
               color)
               .evalable()})})
@@ -292,20 +79,10 @@ library.using([
         } else {
           return string}})
 
-    var brush = baseBridge.defineSingleton(
-      [scene, setQueryParam],
-      function(scene, setQueryParam) {
-        function Brush() {}
-        Brush.prototype.pickColor = function(color) {
-          setQueryParam("color", color.join('**'))
-          scene.setBrushColor(
-            color)
-          scene.draw()}
-        return new Brush()})
+    brush.defineOn(baseBridge, getQueryParam)
 
     baseBridge.addToHead(
       element.stylesheet(
-        canvas,
         colorButton))
 
     baseBridge.addToHead(
@@ -366,28 +143,6 @@ library.using([
         this.addAttributes({
           "onclick": zoom.evalable()})})
 
-    var swatches = [
-      colorButton(
-        56,
-        148,
-        133),
-      colorButton(
-        58,
-        76,
-        146),
-      colorButton(
-        160,
-        44,
-        114),
-      colorButton(
-        35,
-        190,
-        14),
-      colorButton(
-        150,
-        219,
-        138)]
-
     site.addRoute(
       "get",
       "/flurble",
@@ -399,12 +154,55 @@ library.using([
           response)
         var tracingImage = tracer(zoomLevel)
 
+        const canvasId = element.anId()
+
+        const globs = bridge.defineSingleton([
+          bridgeModule(
+            lib,
+            "./globs",
+            baseBridge),
+          canvasId,
+          GLOB_SIZE,
+          canvasWidthInPixels,
+          canvasHeightInPixels],
+          function(Globs, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+            return new Globs(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+
+        var paintBrush = brush(bridge, globs, canvasId, canvasWidthInPixels, canvasHeightInPixels)
+
+        var pickColor = brush.getPickColorBinding(paintBrush)
+
         if (color.length === 4) {
           bridge.domReady(
-            scene.methodCall(
-              "setBrushColor")
-              .withArgs(
-                color))}
+            pickColor.withArgs(
+              color))}
+
+        var swatches = [
+          colorButton(
+            pickColor,
+            56,
+            148,
+            133),
+          colorButton(
+            pickColor,
+            58,
+            76,
+            146),
+          colorButton(
+            pickColor,
+            160,
+            44,
+            114),
+          colorButton(
+            pickColor,
+            35,
+            190,
+            14),
+          colorButton(
+            pickColor,
+            150,
+            219,
+            138)]
 
         bridge.send([
           element(
@@ -421,7 +219,7 @@ library.using([
             swatches),
           element("br"),
           tracingImage,
-          drawable])})
+          paintBrush])})
 
     site.addRoute(
       "get",

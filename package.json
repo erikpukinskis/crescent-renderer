@@ -1,13 +1,14 @@
 {
   "dependencies": {
+    "basic-styles": "*",
+    "bridge-module": "*",
     "browser-bridge": "^0.192.0",
+    "function-call": "^0.39.0",
     "module-library": "*",
     "web-element": "*",
-    "web-site": "*",
-    "bridge-module": "*",
-    "basic-styles": "*",
-    "function-call": "^0.39.0"
+    "web-site": "*"
   },
+  "main": "canvas.js",
   "scripts": {
     "start": "node start"
   }
