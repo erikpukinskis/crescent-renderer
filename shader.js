@@ -91,6 +91,22 @@ module.exports = library.export(
 
         // I don't know.
 
+        // Update 11/16:
+
+        // I am doing data-driven programming here. So let's use that to guide our decision making process.
+
+        // At this stage, there's no reason to re-render the whole image every time the cursor moves. So right there it seems to make sense to have the paint buffer just update when pixels are added/removed.
+
+        // Also, there will be different colors on each pixel. I don't know how much its going to make sense to share color information between pixels. I know I need variation. I'm not sure I need cohesion. So let's start with just every point having its own color
+
+        // The next question is the number of canvases.
+
+        // I do have this desire to think about how multiple images might be projected together. But I have no need for that at the current time. And for performance sake I kind of expect separate canvases to be helpful soon.
+
+        // I could split each body part on a different canvas. But the update schedule on the different parts is going to be the same.
+
+        // I think the cursor is just its own thing. That should be a canvas. And the painting should be a canvas.
+
         gl.bindBuffer(
           gl.ARRAY_BUFFER,
           this.brushColorBuffer)
