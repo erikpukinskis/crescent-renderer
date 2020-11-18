@@ -170,6 +170,10 @@ module.exports = library.export(
         throw new Error(
         "Forgot to call ShaderScene.init")}}
 
+    ShaderScene.prototype.pushCoordinates = function(coordinates) {
+      throw new Error("pushCoordinates not implemented")
+    }
+
     ShaderScene.prototype.setCoordinates = function(coordinates) {
       this.assertInit()
 

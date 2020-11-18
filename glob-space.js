@@ -1,10 +1,10 @@
 var library = require("module-library")(require)
 
 module.exports = library.export(
-  "globs",
+  "glob-space",
   function() {
 
-    function Globs(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+    function GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
       this.globs = []
       this.canvasId = canvasId
       this.GLOB_SIZE = GLOB_SIZE
@@ -12,21 +12,21 @@ module.exports = library.export(
       this.canvasHeightInPixels = canvasHeightInPixels
     }
 
-    Globs.prototype.globXToCanvasX =
-      function globXToCanvasX(globs) {
-          var pixels = globs * this.GLOB_SIZE
+    GlobSpace.prototype.globXToCanvasX =
+      function globXToCanvasX(globX) {
+          var pixels = globX * this.GLOB_SIZE
           pixels = pixels + this.GLOB_SIZE
           var canvasX = 2*pixels/this.canvasWidthInPixels - 1
           return canvasX }
 
-    Globs.prototype.globYToCanvasY =
-      function globYToCanvasY(globs) {
-          var pixels = globs * this.GLOB_SIZE
+    GlobSpace.prototype.globYToCanvasY =
+      function globYToCanvasY(globY) {
+          var pixels = globY * this.GLOB_SIZE
           pixels = pixels + this.GLOB_SIZE
           var canvasX = -2*pixels/this.canvasHeightInPixels + 1
           return canvasX }
 
-    Globs.prototype.getRect =
+    GlobSpace.prototype.getRect =
       function() {
         if (this.rect) {
           return this.rect
@@ -38,56 +38,87 @@ module.exports = library.export(
         this.rect = gl.canvas.getBoundingClientRect()
         return this.rect}
 
-    Globs.prototype.getRectX =
+    GlobSpace.prototype.getRectX =
       function(event) {
         var canvasLeft = this.getRect()
             .left
         return event.clientX - canvasLeft }
 
-    Globs.prototype.getRectY =
+    GlobSpace.prototype.getRectY =
       function(event) {
         var canvasTop = this.getRect()
             .top
         return event.clientY - canvasTop }
 
-    Globs.prototype.getGlobX =
+    GlobSpace.prototype.getGlobX =
       function( event) {
         var rectX = this.getRectX(event)
         return Math.floor(
           rectX / this.GLOB_SIZE)}
 
-    Globs.prototype.getGlobY =
+    GlobSpace.prototype.getGlobY =
       function(event) {
         var rectY = this.getRectY(event)
         return Math.floor(
           rectY / this.GLOB_SIZE)}
 
-    Globs.prototype.activeGlob = function() {
+    GlobSpace.prototype.getPixel = function(x, y) {
+        return new Float32Array([
+          globs.globXToCanvasX(
+            x - 1),
+          globs.globYToCanvasY(
+            y),
+
+          globs.globXToCanvasX(
+            x - 1),
+          globs.globYToCanvasY(
+            y - 1),
+
+          globs.globXToCanvasX(
+            x),
+          globs.globYToCanvasY(
+            y),
+
+          globs.globXToCanvasX(
+            x),
+          globs.globYToCanvasY(
+            y - 1)])}
+
+
+    GlobSpace.prototype.activeGlob = function() {
       if (this.activeGlobIndex != null) {
         return this.globs[
           this.activeGlobIndex]}}
 
-    Globs.prototype.start = function(rectX,rectY) {
+    GlobSpace.prototype.start = function(rectX,rectY) {
       this.activeGlobIndex = this.globs.length
       this.activeGlobStartRectX = rectX
       this.activeGlobStartRectY = rectY
       this.globs.push({
-        "x": Math.floor(rectX/this.GLOB_SIZE),
-        "y": Math.floor(rectY/this.GLOB_SIZE),
+        "x": Math.floor(
+          rectX/this.GLOB_SIZE),
+        "y": Math.floor(
+          rectY/this.GLOB_SIZE),
         "nudgeX": 0,
         "nudgeY": 0})}
 
-    Globs.prototype.nudge = function(rectX,rectY) {
+    GlobSpace.prototype.nudge = function(rectX,rectY) {
       var dx = rectX - this.activeGlobStartRectX
       var dy = rectY - this.activeGlobStartRectY
 
       this.globs[this.activeGlobIndex].nudgeX = dx/this.GLOB_SIZE
       this.globs[this.activeGlobIndex].nudgeY = dy/this.GLOB_SIZE}
 
-    Globs.prototype.end = function() {
-      this.activeGlobIndex = undefined
-      console.log("new glob!", this.globs)}
+    GlobSpace.prototype.pop = function() {
+      return this.globs.pop()}
 
-    return Globs
+    GlobSpace.prototype.push = function(glob) {
+      this.activeGlobIndex = undefined
+      return this.globs.push(glob)}
+
+    GlobSpace.prototype.end = function() {
+      this.activeGlobIndex = undefined}
+
+    return GlobSpace
   }
 )

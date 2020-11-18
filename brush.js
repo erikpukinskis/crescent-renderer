@@ -6,12 +6,12 @@ module.exports = library.export(
   function(lib, element, bridgeModule) {
 
     var brush = element.template(
-      "canvas",
+      "canvas.brush",
       element.style({
         "position": "absolute",
         "background": "rgba(0,0,0,0.05)",
         "border": "none"}),
-      function(bridge, globs, canvasId, width, height) {
+      function(bridge, brushGlobs, canvasGlobs, canvasId, width, height) {
         var events = bridge.remember(
           "warrens/brush")
 
@@ -50,7 +50,7 @@ module.exports = library.export(
             withArgs(globs, bridge.event).
             evalable(),
           "onmouseup": events.brushUp.
-            withArgs(scene, globs, bridge.event).
+            withArgs(scene, globs, canvasGlobs, bridge.event).
             evalable(),
           "onmouseout": events.setBrushVisible.
             withArgs(scene, false).
@@ -101,28 +101,7 @@ module.exports = library.export(
             y = globs.getGlobY(event)
           }
 
-          var coordinates = new Float32Array([
-            globs.globXToCanvasX(
-              x - 1),
-            globs.globYToCanvasY(
-              y),
-
-            globs.globXToCanvasX(
-              x - 1),
-            globs.globYToCanvasY(
-              y - 1),
-
-            globs.globXToCanvasX(
-              x),
-            globs.globYToCanvasY(
-              y),
-
-            globs.globXToCanvasX(
-              x),
-            globs.globYToCanvasY(
-              y - 1),
-          ])
-
+          var coordinates = globs.getPixel(x, y)
           scene.setCoordinates(coordinates)
           scene.draw()})
 
@@ -133,8 +112,10 @@ module.exports = library.export(
             globs.getRectY(event))})
 
       var brushUp = bridge.defineFunction(
-        function handleBrushUp(scene, globs, event) {
-          globs.end()})
+        function handleBrushUp(scene, brushGlobs, canvasGlobs, event) {
+          var glob = brushGlobs.pop()
+          canvasGlobs.push(
+            glob)})
 
       var setBrushVisible = bridge.defineFunction(function setBrushVisible(scene, isVisible) {
           scene.setBrushVisible(

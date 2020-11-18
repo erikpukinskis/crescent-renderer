@@ -9,9 +9,11 @@ library.using([
   "web-element",
   "bridge-module",
   "./shader",
+  "./glob-space",
   "basic-styles",
-  "./brush"],
-  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, basicStyles, brush) {
+  "./brush",
+  "./critter"],
+  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, __, basicStyles, brush, critter) {
 
     var baseBridge = new BrowserBridge()
     basicStyles.addTo(baseBridge)
@@ -154,21 +156,37 @@ library.using([
           response)
         var tracingImage = tracer(zoomLevel)
 
-        const canvasId = element.anId()
+        var foxCanvasId = element.anId()
 
-        const globs = bridge.defineSingleton([
+        var foxGlobs = bridge.defineSingleton([
           bridgeModule(
             lib,
-            "./globs",
+            "./glob-space",
+            baseBridge),
+          foxCanvasId,
+          GLOB_SIZE,
+          canvasWidthInPixels,
+          canvasHeightInPixels],
+          function(GlobSpace, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+            return new GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+
+        var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+
+        var brushCanvasId = element.anId()
+
+        var brushGlobs = bridge.defineSingleton([
+          bridgeModule(
+            lib,
+            "./glob-space",
             baseBridge),
           canvasId,
           GLOB_SIZE,
           canvasWidthInPixels,
           canvasHeightInPixels],
-          function(Globs, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
-            return new Globs(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+          function(GlobSpace, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+            return new GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
 
-        var paintBrush = brush(bridge, globs, canvasId, canvasWidthInPixels, canvasHeightInPixels)
+        var paintBrush = brush(bridge, brushGlobs, foxGlobs, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
@@ -219,7 +237,8 @@ library.using([
             swatches),
           element("br"),
           tracingImage,
-          paintBrush])})
+          paintBrush,
+          fox])})
 
     site.addRoute(
       "get",
