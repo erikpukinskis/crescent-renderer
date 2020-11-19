@@ -8,8 +8,5 @@
     "web-element": "*",
     "web-site": "*"
   },
-  "main": "canvas.js",
-  "scripts": {
-    "start": "node start"
-  }
+  "main": "canvas.js"
 }
