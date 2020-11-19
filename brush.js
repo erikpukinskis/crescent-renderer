@@ -44,13 +44,13 @@ module.exports = library.export(
           "width": width+"px",
           "height": height+"px",
           "onmousemove": events.mouseMove.
-            withArgs(scene, globs, bridge.event).
+            withArgs(scene, brushGlobs, bridge.event).
             evalable(),
           "onmousedown": events.brushDown.
-            withArgs(globs, bridge.event).
+            withArgs(brushGlobs, bridge.event).
             evalable(),
           "onmouseup": events.brushUp.
-            withArgs(scene, globs, canvasGlobs, bridge.event).
+            withArgs(scene, brushGlobs, canvasGlobs, bridge.event).
             evalable(),
           "onmouseout": events.setBrushVisible.
             withArgs(scene, false).
@@ -101,8 +101,11 @@ module.exports = library.export(
             y = globs.getGlobY(event)
           }
 
-          var coordinates = globs.getPixel(x, y)
-          scene.setCoordinates(coordinates)
+          var color = new Float32Array([1.0, 1.0, 1.0, 0.5])
+
+          var points = globs.getPixel(x, y, color)
+
+          scene.bufferPoints(points)
           scene.draw()})
 
       var brushDown = bridge.defineFunction(

@@ -1,11 +1,11 @@
 var library = require("module-library")(require)
 
 module.exports = library.export(
-  "brush",
+  "critter",
   [library.ref(), "web-element", "bridge-module"],
   function(lib, element, bridgeModule) {
 
-    var brush = element.template(
+    var critter = element.template(
       "canvas.critter",
       element.style({
         "position": "absolute",
@@ -74,9 +74,8 @@ module.exports = library.export(
       return brushElement.__addGlobBinding
     }
 
-    brush.defineOn = defineOn
-    brush.getAddGlobBinding = getAddGlobBinding
+    critter.getAddGlobBinding = getAddGlobBinding
 
-    return brush
+    return critter
   }
 )

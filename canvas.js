@@ -158,7 +158,8 @@ library.using([
 
         var foxCanvasId = element.anId()
 
-        var foxGlobs = bridge.defineSingleton([
+        var foxGlobs = bridge.defineSingleton(
+          "fox",[
           bridgeModule(
             lib,
             "./glob-space",
@@ -167,24 +168,25 @@ library.using([
           GLOB_SIZE,
           canvasWidthInPixels,
           canvasHeightInPixels],
-          function(GlobSpace, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
-            return new GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+          function(GlobSpace, foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+            return new GlobSpace(foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
 
-        var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+        // var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
         var brushCanvasId = element.anId()
 
-        var brushGlobs = bridge.defineSingleton([
+        var brushGlobs = bridge.defineSingleton(
+          "brush", [
           bridgeModule(
             lib,
             "./glob-space",
             baseBridge),
-          canvasId,
+          brushCanvasId,
           GLOB_SIZE,
           canvasWidthInPixels,
           canvasHeightInPixels],
-          function(GlobSpace, canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
-            return new GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+          function(GlobSpace, brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+            return new GlobSpace(brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
 
         var paintBrush = brush(bridge, brushGlobs, foxGlobs, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
@@ -238,7 +240,8 @@ library.using([
           element("br"),
           tracingImage,
           paintBrush,
-          fox])})
+          // fox,
+          ])})
 
     site.addRoute(
       "get",

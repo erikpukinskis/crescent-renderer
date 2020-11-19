@@ -62,28 +62,41 @@ module.exports = library.export(
         return Math.floor(
           rectY / this.GLOB_SIZE)}
 
-    GlobSpace.prototype.getPixel = function(x, y) {
-        return new Float32Array([
-          globs.globXToCanvasX(
-            x - 1),
-          globs.globYToCanvasY(
-            y),
+    GlobSpace.prototype.getPixel = function(x, y, color) {
+      var points = new Float32Array(6*4)
+      points.set([
+        this.globXToCanvasX(
+          x - 1),
+        this.globYToCanvasY(
+          y)],
+        0*6)
+      points.set(color, 0*6+2)
 
-          globs.globXToCanvasX(
-            x - 1),
-          globs.globYToCanvasY(
-            y - 1),
+      points.set([
+        this.globXToCanvasX(
+          x - 1),
+        this.globYToCanvasY(
+          y - 1)],
+        1*6)
+      points.set(color, 1*6+2)
 
-          globs.globXToCanvasX(
-            x),
-          globs.globYToCanvasY(
-            y),
+      points.set([
+        this.globXToCanvasX(
+          x),
+        this.globYToCanvasY(
+          y)],
+        2*6)
+      points.set(color, 2*6+2)
 
-          globs.globXToCanvasX(
-            x),
-          globs.globYToCanvasY(
-            y - 1)])}
+      points.set([
+        this.globXToCanvasX(
+          x),
+        this.globYToCanvasY(
+          y - 1)],
+        3*6)
+      points.set(color, 3*6+2)
 
+      return points}
 
     GlobSpace.prototype.activeGlob = function() {
       if (this.activeGlobIndex != null) {
