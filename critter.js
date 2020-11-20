@@ -9,8 +9,11 @@ module.exports = library.export(
       "canvas.critter",
       element.style({
         "position": "absolute",
+        "top": "300px",
+        "left": "300px",
+        "box-sizing": "border-box",
         "background": "rgba(0,0,0,0.05)",
-        "border": "none"}),
+        "border": "2px solid green"}),
       function(bridge, globs, canvasId, width, height) {
 
         this.addAttribute(
@@ -19,18 +22,17 @@ module.exports = library.export(
 
         var scene = bridge.defineSingleton(
           'scene',[
-          canvasId,
           bridgeModule(
             lib,
             "./shader",
             bridge)],
-          function(canvasId, ShaderScene) {
+          function critterScene(ShaderScene) {
             return new ShaderScene()})
 
         bridge.domReady([
           scene,
           canvasId],
-          function(scene, canvasId) {
+          function critterInit(scene, canvasId) {
             var canvas = document.getElementById(
               canvasId)
             scene.init(
@@ -40,41 +42,50 @@ module.exports = library.export(
           "width": width+"px",
           "height": height+"px"})
 
-        bridge.domReady([
-          globs,
-          scene],
-          function(globs, scene) {
-            globs.onGlob(
-              function(glob) {
-                x = glob.x + glob.nudgeX
-                y = glob.y + glob.nudgeY
-                var coordinates = globs.getPixel(
-                  x,
-                  y)
-                scene.pushCoordinates(
-                  coordinates)
-                // I think where I need to go from here is to just write the whole array of points in each time I get a new one. I don't think WebGL really has much in the way of abilities to reopen a buffer.
-
-                // Which kind of suggests I should just move to like an xyrgba kind of thing. Or at least xy,rgba thing.
-
-                scene.draw()
-              })
-          })
+        this.__addGlobBinding = defineOn(bridge).withArgs(globs, scene)
 
         bridge.domReady([
           canvasId,
           scene],
-          function initScene(canvasId, scene) {
+          function initScene(critterCanvasId, scene) {
             var canvas = document.getElementById(
-              canvasId)
+              critterCanvasId)
             scene.init(
               canvas)})})
 
+    function defineOn(bridge) {
+      var addGlobBinding = bridge.remember("critter")
+      if (addGlobBinding) return addGlobBinding
+
+      bridge.addToHead(
+        element.stylesheet(
+          critter))
+
+      addGlobBinding = bridge.defineFunction(
+        function addGlob(globs, scene, glob) {
+          globs.push(glob)
+          var points = globs.getAllPixels()
+          console.log('writing', points)
+          scene.bufferPoints(points)
+          console.log('drawing')
+
+          // Welp, for some reason this doesn't show up. But dang if we're not close.
+
+          scene.draw()})
+
+      bridge.see(
+        "critter",
+        addGlobBinding)
+
+      return addGlobBinding
+    }
+
     function getAddGlobBinding(critterElement) {
-      return brushElement.__addGlobBinding
+      return critterElement.__addGlobBinding
     }
 
     critter.getAddGlobBinding = getAddGlobBinding
+    critter.defineOn = defineOn
 
     return critter
   }

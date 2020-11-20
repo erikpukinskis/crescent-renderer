@@ -82,6 +82,7 @@ library.using([
           return string}})
 
     brush.defineOn(baseBridge, getQueryParam)
+    critter.defineOn(baseBridge)
 
     baseBridge.addToHead(
       element.stylesheet(
@@ -171,7 +172,9 @@ library.using([
           function(GlobSpace, foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
             return new GlobSpace(foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
 
-        // var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+        var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+
+        var addGlob = critter.getAddGlobBinding(fox)
 
         var brushCanvasId = element.anId()
 
@@ -188,7 +191,7 @@ library.using([
           function(GlobSpace, brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
             return new GlobSpace(brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
 
-        var paintBrush = brush(bridge, brushGlobs, foxGlobs, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+        var paintBrush = brush(bridge, brushGlobs, addGlob, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
@@ -240,7 +243,7 @@ library.using([
           element("br"),
           tracingImage,
           paintBrush,
-          // fox,
+          fox,
           ])})
 
     site.addRoute(

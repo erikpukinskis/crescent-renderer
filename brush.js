@@ -11,7 +11,7 @@ module.exports = library.export(
         "position": "absolute",
         "background": "rgba(0,0,0,0.05)",
         "border": "none"}),
-      function(bridge, brushGlobs, canvasGlobs, canvasId, width, height) {
+      function(bridge, brushGlobs, addGlob, canvasId, width, height) {
         var events = bridge.remember(
           "warrens/brush")
 
@@ -21,18 +21,17 @@ module.exports = library.export(
 
         var scene = bridge.defineSingleton(
           'scene',[
-          canvasId,
           bridgeModule(
             lib,
             "./shader",
             bridge)],
-          function(canvasId, ShaderScene) {
+          function brushScene(ShaderScene) {
             return new ShaderScene()})
 
         bridge.domReady([
           scene,
           canvasId],
-          function(scene, canvasId) {
+          function brushInit(scene, canvasId) {
             var canvas = document.getElementById(
               canvasId)
             scene.init(
@@ -58,7 +57,7 @@ module.exports = library.export(
             withArgs(brushGlobs, bridge.event).
             evalable(),
           "onmouseup": events.brushUp.
-            withArgs(scene, brushGlobs, canvasGlobs, bridge.event).
+            withArgs(scene, brushGlobs, addGlob, bridge.event).
             evalable(),
           "onmouseout": events.setBrushVisible.
             withArgs(scene, false).
@@ -125,9 +124,9 @@ module.exports = library.export(
             globs.getRectY(event))})
 
       var brushUp = bridge.defineFunction(
-        function handleBrushUp(scene, brushGlobs, canvasGlobs, event) {
+        function handleBrushUp(scene, brushGlobs, addGlob, event) {
           var glob = brushGlobs.pop()
-          canvasGlobs.push(
+          addGlob(
             glob)})
 
       var setBrushVisible = bridge.defineFunction(function setBrushVisible(scene, isVisible) {

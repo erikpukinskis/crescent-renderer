@@ -62,14 +62,17 @@ module.exports = library.export(
         return Math.floor(
           rectY / this.GLOB_SIZE)}
 
-    GlobSpace.prototype.getPixel = function(x, y, color) {
-      var points = new Float32Array(6*4)
+    GlobSpace.prototype.getPixel = function(x, y, color, points, offset) {
+      if (!points) {
+        points = new Float32Array(6*4)
+        offset = 0
+      }
       points.set([
         this.globXToCanvasX(
           x - 1),
         this.globYToCanvasY(
           y)],
-        0*6)
+        offset*24+0*6)
       points.set(color, 0*6+2)
 
       points.set([
@@ -77,7 +80,7 @@ module.exports = library.export(
           x - 1),
         this.globYToCanvasY(
           y - 1)],
-        1*6)
+        offset*24+1*6)
       points.set(color, 1*6+2)
 
       points.set([
@@ -85,7 +88,7 @@ module.exports = library.export(
           x),
         this.globYToCanvasY(
           y)],
-        2*6)
+        offset*24+2*6)
       points.set(color, 2*6+2)
 
       points.set([
@@ -93,10 +96,28 @@ module.exports = library.export(
           x),
         this.globYToCanvasY(
           y - 1)],
-        3*6)
+        offset*24+3*6)
       points.set(color, 3*6+2)
 
       return points}
+
+    GlobSpace.prototype.getAllPixels = function() {
+      var color = new Float32Array([0.5859375,0.85546875,0.5390625,0.4000000059604645])
+
+      return this.getPixel(this.globs[0].x + this.globs[0].nudgeX, this.globs[0].y + this.globs[0].nudgeY, color)
+
+      var points = new Float32Array(this.globs.length*6*4)
+      var globs = this
+      this.globs.forEach(
+        function(glob, offset) {
+          x = glob.x + glob.nudgeX
+          y = glob.y + glob.nudgeY
+
+
+          globs.getPixel(x, y, color, points, offset)
+        })
+      return points
+    }
 
     GlobSpace.prototype.activeGlob = function() {
       if (this.activeGlobIndex != null) {
