@@ -48,10 +48,10 @@ module.exports = library.export(
           2, // I assume this sets the chunk size
           gl.FLOAT, // and type
           false, // this would normalize if the type were int, but has no effect on floats
-          4, // I think this could be a gap between each chunk
-          0) // and this could specify where to start in the array coordinate array we passed in
+          6*4, // The stride between the start of each chunk, in floats (where each float is 4)
+          0) // The position of the first chunk (also in floats)
 
-        console.log('coordinates is at index', this.coordinatesLocation)
+        console.log('coordinates is attribute', this.coordinatesLocation)
 
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
@@ -72,14 +72,14 @@ module.exports = library.export(
           4,
           gl.FLOAT,
           false,
-          2,
-          2)
+          6*4,
+          2*4)
 
         gl.enableVertexAttribArray(
           this.brushColorLocation)
 
         console.log(
-          "color is at index",
+          "color is attribute",
           this.brushColorLocation)
 
         // This is where the draw begins

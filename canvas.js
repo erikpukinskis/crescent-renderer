@@ -190,7 +190,13 @@ library.using([
 
         var paintBrush = brush(bridge, brushGlobs, foxGlobs, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
-        var pickColor = brush.getPickColorBinding(paintBrush)
+        // var pickColor = brush.getPickColorBinding(paintBrush)
+
+        var pickColor = bridge.defineFunction(
+          function(color) {
+            console.log(
+              "picked color",
+              color)})
 
         if (color.length === 4) {
           bridge.domReady(

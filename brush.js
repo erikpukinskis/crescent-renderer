@@ -15,8 +15,6 @@ module.exports = library.export(
         var events = bridge.remember(
           "warrens/brush")
 
-        console.log("canvas id inside is", canvasId)
-
         this.addAttribute(
           "id",
           canvasId)
@@ -138,12 +136,12 @@ module.exports = library.export(
 
       return events}
 
-    function getPickColorBinding(brushElement) {
-      return brushElement.__scene.methodCall('setBrushColor')
-    }
+    // function getPickColorBinding(brushElement) {
+    //   return brushElement.__setBrushColor
+    // }
 
     brush.defineOn = defineOn
-    brush.getPickColorBinding = getPickColorBinding
+    // brush.getPickColorBinding = getPickColorBinding
 
     return brush
   }
