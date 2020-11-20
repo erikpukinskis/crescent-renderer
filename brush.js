@@ -38,11 +38,21 @@ module.exports = library.export(
             scene.init(
               canvas)})
 
+        this.__color = bridge.defineSingleton(
+          "color",
+          function() {
+            function Color(){}
+            Color.prototype.set = function(color) {
+              this.color = color}
+            Color.prototype.get = function() {
+              return this.color}
+            return new Color()})
+
         this.addAttributes({
           "width": width+"px",
           "height": height+"px",
           "onmousemove": events.mouseMove.
-            withArgs(scene, brushGlobs, bridge.event).
+            withArgs(scene, brushGlobs, this.__color, bridge.event).
             evalable(),
           "onmousedown": events.brushDown.
             withArgs(brushGlobs, bridge.event).
@@ -82,7 +92,7 @@ module.exports = library.export(
           brush))
 
       var mouseMove = bridge.defineFunction(
-        function handleMouseMove(scene, globs, event) {
+        function handleMouseMove(scene, globs, color, event) {
 
           var x
           var y
@@ -99,9 +109,11 @@ module.exports = library.export(
             y = globs.getGlobY(event)
           }
 
-          var color = new Float32Array([1.0, 1.0, 1.0, 0.5])
+          var c = color.get()
 
-          var points = globs.getPixel(x, y, color)
+          if (!c) return
+
+          var points = globs.getPixel(x, y, c)
 
           scene.bufferPoints(points)
           scene.draw()})
@@ -136,12 +148,13 @@ module.exports = library.export(
 
       return events}
 
-    // function getPickColorBinding(brushElement) {
-    //   return brushElement.__setBrushColor
-    // }
+    function getPickColorBinding(brushElement) {
+      return brushElement.__color.methodCall(
+        'set')
+    }
 
     brush.defineOn = defineOn
-    // brush.getPickColorBinding = getPickColorBinding
+    brush.getPickColorBinding = getPickColorBinding
 
     return brush
   }
