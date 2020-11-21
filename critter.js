@@ -9,11 +9,8 @@ module.exports = library.export(
       "canvas.critter",
       element.style({
         "position": "absolute",
-        "top": "300px",
-        "left": "300px",
-        "box-sizing": "border-box",
         "background": "rgba(0,0,0,0.05)",
-        "border": "2px solid green"}),
+        "border": "none"}),
       function(bridge, globs, canvasId, width, height) {
 
         this.addAttribute(

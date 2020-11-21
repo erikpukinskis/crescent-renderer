@@ -9,7 +9,6 @@ module.exports = library.export(
       "canvas.brush",
       element.style({
         "position": "absolute",
-        "background": "rgba(0,0,0,0.05)",
         "border": "none"}),
       function(bridge, brushGlobs, addGlob, canvasId, width, height) {
         var events = bridge.remember(

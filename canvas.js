@@ -242,8 +242,8 @@ library.using([
             swatches),
           element("br"),
           tracingImage,
-          paintBrush,
           fox,
+          paintBrush,
           ])})
 
     site.addRoute(

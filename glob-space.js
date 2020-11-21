@@ -76,8 +76,8 @@ module.exports = library.export(
             globX),
           space.globYToCanvasY(
             globY)],
-          offset*24+index*6)
-        points.set(color, index*6+2)
+          offset*36+index*6)
+        points.set(color, offset*36+index*6+2)
       }
 
       point(x-1, y-1, 0)
