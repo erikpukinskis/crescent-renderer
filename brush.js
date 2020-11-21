@@ -130,7 +130,7 @@ module.exports = library.export(
             glob)})
 
       var setBrushVisible = bridge.defineFunction(function setBrushVisible(scene, isVisible) {
-          scene.setBrushVisible(
+          scene.setVisible(
             isVisible)
           scene.draw()})
 

@@ -13,7 +13,7 @@ module.exports = library.export(
 
     // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
 
-    ShaderScene.prototype.brushIsVisible = false
+    ShaderScene.prototype._visible = false
 
     ShaderScene.prototype.init = function(canvas) {
         var gl = this.gl = canvas.getContext(
@@ -105,7 +105,7 @@ module.exports = library.export(
           "Forgot to call ShaderScene.init")}
       var gl = this.gl
 
-      if (!this.brushIsVisible) {
+      if (!this._visible) {
         gl.clear(
           gl.COLOR_BUFFER_BIT)}
       else {
@@ -143,8 +143,8 @@ module.exports = library.export(
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
 
-    ShaderScene.prototype.setBrushVisible = function(isVisible) {
-      this.brushIsVisible = isVisible
+    ShaderScene.prototype.setVisible = function(visible) {
+      this._visible = visible
     }
 
     function createShaderProgram(gl) {
