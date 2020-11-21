@@ -93,11 +93,10 @@ module.exports = library.export(
     GlobSpace.prototype.getAllPixels = function() {
       var color = new Float32Array([0.5859375,0.85546875,0.5390625,0.4000000059604645])
 
-      // return this.getPixel(this.globs[0].x + this.globs[0].nudgeX, this.globs[0].y + this.globs[0].nudgeY, color)
-
       var points = new Float32Array(this.globs.length*6*6)
-      console.log(points.length, "points")
+
       var globs = this
+
       this.globs.forEach(
         function(glob, offset) {
           x = glob.x + glob.nudgeX
@@ -106,6 +105,7 @@ module.exports = library.export(
 
           globs.getPixel(x, y, color, points, offset)
         })
+
       return points
     }
 

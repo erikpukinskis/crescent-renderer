@@ -61,16 +61,9 @@ module.exports = library.export(
 
       addGlobBinding = bridge.defineFunction(
         function addGlob(globs, scene, glob) {
-          console.log("adding glob", glob)
           globs.push(glob)
           var points = globs.getAllPixels()
-          console.log(globs.globs.length, "globs")
-          console.log('writing', points)
           scene.bufferPoints(points)
-          console.log('drawing')
-
-          // Welp, for some reason this doesn't show up. But dang if we're not close.
-
           scene.draw()})
 
       bridge.see(

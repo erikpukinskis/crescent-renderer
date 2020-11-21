@@ -117,8 +117,6 @@ module.exports = library.export(
           gl.TRIANGLES,
           0, // first one to start at
           this._bufferSize)} // how many to draw
-
-      console.log("drawing "+this._bufferSize)
     }
 
     ShaderScene.prototype.assertInit = function() {
