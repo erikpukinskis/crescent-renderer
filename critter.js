@@ -51,7 +51,8 @@ module.exports = library.export(
             var canvas = document.getElementById(
               critterCanvasId)
             scene.init(
-              canvas)})})
+              canvas)
+            scene.setVisible(true)})})
 
     function defineOn(bridge) {
       var addGlobBinding = bridge.remember("critter")
@@ -63,8 +64,10 @@ module.exports = library.export(
 
       addGlobBinding = bridge.defineFunction(
         function addGlob(globs, scene, glob) {
+          console.log("adding glob", glob)
           globs.push(glob)
           var points = globs.getAllPixels()
+          console.log(globs.globs.length, "globs")
           console.log('writing', points)
           scene.bufferPoints(points)
           console.log('drawing')

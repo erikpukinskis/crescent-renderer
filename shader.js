@@ -37,6 +37,12 @@ module.exports = library.export(
           gl.ARRAY_BUFFER,
           this.buffer)
 
+        // Set the size of the buffer, so we can buffer in more points over time:
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          4*6*8,
+          gl.DYNAMIC_DRAW)
+
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
         this.coordinatesLocation = gl.getAttribLocation(
           shaderProgram,
@@ -105,14 +111,20 @@ module.exports = library.export(
           "Forgot to call ShaderScene.init")}
       var gl = this.gl
 
+      if (!this._bufferSize) {
+        throw new Error(
+          "Can't draw if we haven't buffered any points")
+      }
       if (!this._visible) {
         gl.clear(
           gl.COLOR_BUFFER_BIT)}
       else {
         gl.drawArrays(
-          gl.TRIANGLE_STRIP,
+          gl.TRIANGLES,
           0, // first one to start at
-          4)} // how many to draw
+          this._bufferSize)} // how many to draw
+
+      console.log("drawing "+this._bufferSize)
     }
 
     ShaderScene.prototype.assertInit = function() {
@@ -138,6 +150,9 @@ module.exports = library.export(
         data,
         // We are using DYNAMIC_DRAW here because the cursor position will be respecified repeatedly
         gl.DYNAMIC_DRAW)
+
+      // We need to remember how many points we buffered for the gl.drawArrays later on
+      this._bufferSize = data.length/6
 
       // At this point the data seems to be configured properly, so we can unbind it (by binding null)
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
