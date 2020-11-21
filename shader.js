@@ -37,12 +37,6 @@ module.exports = library.export(
           gl.ARRAY_BUFFER,
           this.buffer)
 
-        // Set the size of the buffer, so we can buffer in more points over time:
-        gl.bufferData(
-          gl.ARRAY_BUFFER,
-          4*6*8,
-          gl.DYNAMIC_DRAW)
-
         // This grabs a reference to a specific attribute in one of our shaders, in this case the coordinates attribute vertex shader
         this.coordinatesLocation = gl.getAttribLocation(
           shaderProgram,
