@@ -13,8 +13,6 @@ module.exports = library.export(
 
     // This code is adapted from the example at https://www.tutorialspoint.com/webgl/webgl_sample_application.htm
 
-    ShaderScene.prototype._visible = false
-
     ShaderScene.prototype.init = function(canvas) {
         var gl = this.gl = canvas.getContext(
           "experimental-webgl",{
@@ -104,20 +102,16 @@ module.exports = library.export(
         throw new Error(
           "Forgot to call ShaderScene.init")}
       var gl = this.gl
-
-      if (!this._bufferSize) {
+      if (!this.hasOwnProperty(
+        "_bufferSize")) {
         throw new Error(
-          "Can't draw if we haven't buffered any points")
-      }
-      if (!this._visible) {
-        gl.clear(
-          gl.COLOR_BUFFER_BIT)}
-      else {
-        gl.drawArrays(
-          gl.TRIANGLES,
-          0, // first one to start at
-          this._bufferSize)} // how many to draw
-    }
+          "Can't draw if we haven't buffered any points")}
+      gl.drawArrays(
+        gl.TRIANGLES,
+        // first one to start at
+        0,
+        // how many to draw
+        this._bufferSize)}
 
     ShaderScene.prototype.assertInit = function() {
       if (!this.gl) {
@@ -127,11 +121,13 @@ module.exports = library.export(
     ShaderScene.prototype.bufferPoints = function(data) {
       this.assertInit()
 
-      // Coordinates should be a Float32Array. We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+      // data should be a Float32Array. We use floats because WebGL apparently doesn't support very many operations with ints. Will be interesting to revisit that after I've used floats for more things!
+
+      // The data format is x,y,r,g,b,a, so each point is made of six floats.
 
       var gl = this.gl
 
-      // Then we need to tell OpenGL that's the buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
+      // First we need to tell OpenGL which buffer we want to write to. We need to do this each time we want to write to a different buffer, although we could do several bufferings in a row off this one bind:
       gl.bindBuffer(
         gl.ARRAY_BUFFER,
         this.buffer)
@@ -140,18 +136,14 @@ module.exports = library.export(
       gl.bufferData(
         gl.ARRAY_BUFFER,
         data,
-        // We are using DYNAMIC_DRAW here because the cursor position will be respecified repeatedly
+        // We are using DYNAMIC_DRAW here because we're going to write new points into this buffer over and over.
         gl.DYNAMIC_DRAW)
 
-      // We need to remember how many points we buffered for the gl.drawArrays later on
+      // We need to remember how many points we are buffering for our gl.drawArrays call to know later
       this._bufferSize = data.length/6
 
       // At this point the data seems to be configured properly, so we can unbind it (by binding null)
       gl.bindBuffer(gl.ARRAY_BUFFER, null)
-    }
-
-    ShaderScene.prototype.setVisible = function(visible) {
-      this._visible = visible
     }
 
     function createShaderProgram(gl) {
@@ -231,19 +223,18 @@ module.exports = library.export(
 
     function createFillWithColorShader(gl) {
       // A fragment shader writes out color data for the pixel. This one has no inputs, and just returns a fixed value, but it could do lots of fancy stuff.
-      var FILL_WITH_GRAY = `
+      var FILL_WITH_COLOR = `
         varying mediump vec4 _color;
 
         void main(void) {
           gl_FragColor = _color;
-          // gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);
         }
       `
 
       var fragmentShader = gl.createShader(
         gl.FRAGMENT_SHADER)
 
-      gl.shaderSource(fragmentShader, FILL_WITH_GRAY)
+      gl.shaderSource(fragmentShader, FILL_WITH_COLOR)
 
       gl.compileShader(fragmentShader)
 

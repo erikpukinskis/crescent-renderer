@@ -48,8 +48,7 @@ module.exports = library.export(
             var canvas = document.getElementById(
               critterCanvasId)
             scene.init(
-              canvas)
-            scene.setVisible(true)})})
+              canvas)})})
 
     function defineOn(bridge) {
       var addGlobBinding = bridge.remember("critter")
