@@ -211,16 +211,6 @@ module.exports = library.export(
       return vertexShader
     }
 
-    // OK this is a pretty interesting spot now. Which I guess is the point of this project: to get to interesting places.
-
-    // So, I had all this working with one buffer. But I want two buffers, one for the color and one for the position. And I had to make quite a few changes to get that set up, and it just doesn't work. I get:
-
-    //  ERROR :GL_INVALID_OPERATION : glDrawArrays: attempt to access out of range vertices in attribute 1
-
-    // First off, I don't know what attribute 1 is... I kinda want to set a custom attribute index for each of my buffers to make it easier to debug. But I also want to keep these changes as atomic as possible so I'm gonna assume it's the color buffer for now, and maybe if I get stuck I'll do custom indexes.
-
-    // I think the best path is just to try to get the old setup working again, with as much of the new code in place as possible, just to verify that all that stuff is still working.
-
     function createFillWithColorShader(gl) {
       // A fragment shader writes out color data for the pixel. This one has no inputs, and just returns a fixed value, but it could do lots of fancy stuff.
       var FILL_WITH_COLOR = `

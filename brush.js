@@ -53,7 +53,7 @@ module.exports = library.export(
             withArgs(scene, brushGlobs, this.__color, bridge.event).
             evalable(),
           "onmousedown": events.brushDown.
-            withArgs(brushGlobs, bridge.event).
+            withArgs(brushGlobs, this.__color, bridge.event).
             evalable(),
           "onmouseup": events.brushUp.
             withArgs(scene, brushGlobs, addGlob, bridge.event).
@@ -117,10 +117,11 @@ module.exports = library.export(
           scene.draw()})
 
       var brushDown = bridge.defineFunction(
-        function handleBrushDown(globs, event) {
+        function handleBrushDown(globs, color, event) {
           globs.start(
             globs.getRectX(event),
-            globs.getRectY(event))})
+            globs.getRectY(event),
+            color.get())})
 
       var brushUp = bridge.defineFunction(
         function handleBrushUp(scene, brushGlobs, addGlob, event) {
