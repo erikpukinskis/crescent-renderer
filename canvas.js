@@ -131,6 +131,7 @@ library.using([
         var element = document.getElementById(
             elementId)
         element.style.transform = getZoomTransform(zoomLevel)
+
         setQueryParam(
           "zoom",
           zoomLevel)})
@@ -175,6 +176,18 @@ library.using([
         var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
 
         var addGlob = critter.getAddGlobBinding(fox)
+
+        // OK, this is obviously getting a little wild. We're wiring up a lot here, about 100 lines of code. But I think that's OK. I am trying to remind myself that the way EZJS is designed to work is that the architecture is emergent from just consistent adding and refactoring.
+
+        // More specifically I think what's happening here is that I'm realizing how much boilerplate is required to instantiate and wire up the multiple independent pieces of this page. And it's a good thing that all these pieces are independent. But EZJS puts the overhead of working out how to keep things independent on the developer.
+
+        // Modern programming solves this problem by creating a russian doll of frameworks. You limit the complexity within any given layer by enforcing, either via material realities or by culture that certain things don't happen in that layer. That sort of solves the "keep things somewhat independent" problem, but in a very blunt way.
+
+        // A handlful of very senior people make architectural decisions on behalf of an entire industry of practitioners. And those practitioners then need to be experts in their framework layer to know exactly what to do and what not to do. And often need expertise in adjacent framework layers too.
+
+        // But learning an entire framework takes time, so that has a gating effect.
+
+        // And the underlying problem is still not solved. "Architectural" discussions become arguments about trying to exhume massive bodies of code from one framework into another. Which is not refactoring, it's rewriting.
 
         var brushCanvasId = element.anId()
 
