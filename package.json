@@ -8,5 +8,5 @@
     "web-element": "*",
     "web-site": "*"
   },
-  "main": "canvas.js"
+  "main": "aperture.js"
 }

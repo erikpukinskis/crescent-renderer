@@ -21,12 +21,12 @@ library.using([
 
     var ZOOM = 1
     var GLOB_SIZE = 64/ZOOM
-    var CANVAS_WIDTH = 8*ZOOM
-    var CANVAS_HEIGHT = 6*ZOOM
+    var APERTURE_WIDTH = 8*ZOOM
+    var APERTURE_HEIGHT = 6*ZOOM
 
     // These two vars are dupliated in brush.js, which is questionable:
-    var canvasWidthInPixels = CANVAS_WIDTH * GLOB_SIZE
-    var canvasHeightInPixels = CANVAS_HEIGHT * GLOB_SIZE
+    var apertureWidthInPixels = APERTURE_WIDTH * GLOB_SIZE
+    var apertureHeightInPixels = APERTURE_HEIGHT * GLOB_SIZE
 
     var colorButton = element.template(
       "button.swatch",
@@ -168,26 +168,48 @@ library.using([
             baseBridge),
           foxCanvasId,
           GLOB_SIZE,
-          canvasWidthInPixels,
-          canvasHeightInPixels],
-          function(GlobSpace, foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
-            return new GlobSpace(foxCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+          apertureWidthInPixels,
+          apertureHeightInPixels],
+          function(GlobSpace, foxCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels) {
+            return new GlobSpace(foxCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels)})
 
-        var fox = critter(bridge, foxGlobs, foxCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+        var fox = critter(bridge, foxGlobs, foxCanvasId, apertureWidthInPixels, apertureHeightInPixels)
 
         var addGlob = critter.getAddGlobBinding(fox)
 
-        // OK, this is obviously getting a little wild. We're wiring up a lot here, about 100 lines of code. But I think that's OK. I am trying to remind myself that the way EZJS is designed to work is that the architecture is emergent from just consistent adding and refactoring.
+        // More specifically I think what's happening here is that I'm realizing how much boilerplate is required to instantiate and wire up the multiple independent pieces of this page.
 
-        // More specifically I think what's happening here is that I'm realizing how much boilerplate is required to instantiate and wire up the multiple independent pieces of this page. And it's a good thing that all these pieces are independent. But EZJS puts the overhead of working out how to keep things independent on the developer.
+        // I am scared because I know this wiring is something EZJS is undeveloped in, and I don't know how it will turn out.
 
-        // Modern programming solves this problem by creating a russian doll of frameworks. You limit the complexity within any given layer by enforcing, either via material realities or by culture that certain things don't happen in that layer. That sort of solves the "keep things somewhat independent" problem, but in a very blunt way.
+        // But is there any real danger here? I have a zoomBy function, and I need that to send signals to either the brush and the critter canvases, or to their globs.
 
-        // A handlful of very senior people make architectural decisions on behalf of an entire industry of practitioners. And those practitioners then need to be experts in their framework layer to know exactly what to do and what not to do. And often need expertise in adjacent framework layers too.
+        // (In the back of my mind I am also wondering if I need to switch from an action-passing to a handler-providing model, but my gut says not right now and maybe never)
 
-        // But learning an entire framework takes time, so that has a gating effect.
+        // Question stack:
 
-        // And the underlying problem is still not solved. "Architectural" discussions become arguments about trying to exhume massive bodies of code from one framework into another. Which is not refactoring, it's rewriting.
+        // Can the globs control this?
+
+        // Do the globs even need the zoom information?
+
+        // Does the zoom level need to affect what happens in glob-space?
+
+          // Should it do, just as a matter of convenience?
+
+          // In other words, can zoom be orthogonal to what's happening in glob-space?
+
+            // I don't _think_ so. At least not completely. As long as we have pixels with different sizes in glob-space, then we need that thing to be at least somewhat aware of zoom.
+
+            // We could just be passing the brush size in there. And then there's a nice "critter depends on brush" thing, where the critter doesn't even really need to be keeping track of the zoom.
+
+            // I guess then there's two parts to this, 1) zooming the aperture 2), altering the brush size
+
+            // I'm unsure of how much we'll have to mess with canvas dimensions to keep glob-space working. It seems like at a very minimum "canvas width in pixels" is going to be changing for sure.
+
+            // It does seem like glob-space is going to eventually need to be shared across an aperture. Or at least part of it.
+
+        // OK, I'm going to try just zooming all the canvases and seeing what happens.
+
+
 
         var brushCanvasId = element.anId()
 
@@ -199,12 +221,12 @@ library.using([
             baseBridge),
           brushCanvasId,
           GLOB_SIZE,
-          canvasWidthInPixels,
-          canvasHeightInPixels],
-          function(GlobSpace, brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
-            return new GlobSpace(brushCanvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels)})
+          apertureWidthInPixels,
+          apertureHeightInPixels],
+          function(GlobSpace, brushCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels) {
+            return new GlobSpace(brushCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels)})
 
-        var paintBrush = brush(bridge, brushGlobs, addGlob, brushCanvasId, canvasWidthInPixels, canvasHeightInPixels)
+        var paintBrush = brush(bridge, brushGlobs, addGlob, brushCanvasId, apertureWidthInPixels, apertureHeightInPixels)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
