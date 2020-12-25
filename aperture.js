@@ -184,53 +184,11 @@ library.using([
 
         var addGlob = critter.getAddGlobBinding(fox)
 
-        // More specifically I think what's happening here is that I'm realizing how much boilerplate is required to instantiate and wire up the multiple independent pieces of this page.
+        // TODO
 
-        // I am scared because I know this wiring is something EZJS is undeveloped in, and I don't know how it will turn out.
+        // - Add a resolution parameter to glob space
 
-        // But is there any real danger here? I have a zoomBy function, and I need that to send signals to either the brush and the critter canvases, or to their globs.
-
-        // (In the back of my mind I am also wondering if I need to switch from an action-passing to a handler-providing model, but my gut says not right now and maybe never)
-
-        // Question stack:
-
-        // Can the globs control who all gets notified about the zooming?
-
-        // Do the globs even need to know zooming is happening?
-
-        // Does the zoom level need to affect what happens in glob-space?
-
-          // Should it do, just as a matter of convenience?
-
-          // In other words, can zoom be orthogonal to what's happening in glob-space?
-
-            // I don't _think_ so. At least not completely. As long as we have pixels with different sizes in glob-space, then we need that thing to be at least somewhat aware of zoom.
-
-              // But wait, why not? Can we have a different canvas for each zoom? Like, zooming in would blow up all the canvases, but each one would have a different size of pixel?
-
-                // a) that seems inflexible, maybe I want infinite sizes of pixel
-
-                // b) the canvases still need to know canvasWidthInPixels, I don't see any way around that.
-
-            // We could just be passing the brush size in there (in where? into glob-space? in pixels?). And then there's a nice "critter depends on brush" thing, where the critter doesn't even really need to be keeping track of the zoom. (how? because brush tells critter when the zoom changes? that seems off, I have been hoping brush would be its own body of complexity)
-
-            // I guess then there's two parts to this, 1) zooming the aperture 2), altering the brush size
-
-            // I'm unsure of how much we'll have to mess with canvas dimensions to keep glob-space working. It seems like at a very minimum "canvas width in pixels" is going to be changing for sure.
-
-            // It does seem like glob-space is going to eventually need to be shared across an aperture. Or at least part of it.
-
-              // Like maybe there is one glob-space that is used by both brush and critter, but they each have their own array of globs.
-
-                // That feels like kind of a nice goal, and maybe then the start/stop stuff can get moved out of glob-space into brush.
-
-        // OK, but I maybe need to back out some of this global zoom stuff I did.
-
-        // One other question that pops up, do we want all of these canvases to be full rez? Like, I've kind of been assuming all of the canvases would be rendered at screen rez but that's not a necessary assumption. Maybe that's another parameter for glob-space to take.
-
-          // Besides the obvious performance opportunities
-
-          // That might be really nice for art. To be able to draw at one glob size, and nudge just one level down, say 3x.
+        // - Share a single glob space between critter and brush (and move start/stop into brush)
 
         var brushCanvasId = element.anId()
 
