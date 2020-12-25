@@ -91,15 +91,13 @@ library.using([
     baseBridge.addToHead(
       element(
         "title",
-        "Hi!"))
+        "Trace Frames"))
 
-    var tracer = element.template(
-      ".tracer",
-      "img",{
-      "src": "/trace"},
+    var aperture = element.template(
+      ".aperture",
       element.style({
         "transform-origin": "top left",
-        "position": "absolute"}),
+        "position": "relative"}),
       function(zoomLevel) {
         this.assignId()
         if (!zoomLevel) {
@@ -108,8 +106,16 @@ library.using([
           "transform": getZoomTransform(
             zoomLevel)})})
 
+    var tracer = element.template(
+      ".tracer",
+      "img",
+      element.style({
+        "position": "absolute"}),{
+      "src": "/trace"})
+
     baseBridge.addToHead(
       element.stylesheet([
+        aperture,
         tracer]))
 
     function getZoomTransform(zoomLevel) {
@@ -156,7 +162,8 @@ library.using([
         var color = new Float32Array(colorParam.split("**"))
         var bridge = baseBridge.forResponse(
           response)
-        var tracingImage = tracer(zoomLevel)
+
+        var tracingImage = tracer()
 
         var foxCanvasId = element.anId()
 
@@ -187,9 +194,9 @@ library.using([
 
         // Question stack:
 
-        // Can the globs control this?
+        // Can the globs control who all gets notified about the zooming?
 
-        // Do the globs even need the zoom information?
+        // Do the globs even need to know zooming is happening?
 
         // Does the zoom level need to affect what happens in glob-space?
 
@@ -199,7 +206,13 @@ library.using([
 
             // I don't _think_ so. At least not completely. As long as we have pixels with different sizes in glob-space, then we need that thing to be at least somewhat aware of zoom.
 
-            // We could just be passing the brush size in there. And then there's a nice "critter depends on brush" thing, where the critter doesn't even really need to be keeping track of the zoom.
+              // But wait, why not? Can we have a different canvas for each zoom? Like, zooming in would blow up all the canvases, but each one would have a different size of pixel?
+
+                // a) that seems inflexible, maybe I want infinite sizes of pixel
+
+                // b) the canvases still need to know canvasWidthInPixels, I don't see any way around that.
+
+            // We could just be passing the brush size in there (in where? into glob-space? in pixels?). And then there's a nice "critter depends on brush" thing, where the critter doesn't even really need to be keeping track of the zoom. (how? because brush tells critter when the zoom changes? that seems off, I have been hoping brush would be its own body of complexity)
 
             // I guess then there's two parts to this, 1) zooming the aperture 2), altering the brush size
 
@@ -207,9 +220,17 @@ library.using([
 
             // It does seem like glob-space is going to eventually need to be shared across an aperture. Or at least part of it.
 
-        // OK, I'm going to try just zooming all the canvases and seeing what happens.
+              // Like maybe there is one glob-space that is used by both brush and critter, but they each have their own array of globs.
 
+                // That feels like kind of a nice goal, and maybe then the start/stop stuff can get moved out of glob-space into brush.
 
+        // OK, but I maybe need to back out some of this global zoom stuff I did.
+
+        // One other question that pops up, do we want all of these canvases to be full rez? Like, I've kind of been assuming all of the canvases would be rendered at screen rez but that's not a necessary assumption. Maybe that's another parameter for glob-space to take.
+
+          // Besides the obvious performance opportunities
+
+          // That might be really nice for art. To be able to draw at one glob size, and nudge just one level down, say 3x.
 
         var brushCanvasId = element.anId()
 
@@ -262,29 +283,38 @@ library.using([
             219,
             138)]
 
+        var app = aperture(
+          zoomLevel)
+
+        app.addChildren([
+          tracingImage,
+          fox,
+          paintBrush])
+
         bridge.send([
           element(
           "p",[
             zoomButton(
-              tracingImage.id,
+              app.id,
               1),
             " ",
             zoomButton(
-              tracingImage.id,
+              app.id,
               -1)]),
           element(
             "p",
             swatches),
           element("br"),
-          tracingImage,
-          fox,
-          paintBrush,
+          app,
           ])})
 
     site.addRoute(
       "get",
       "/trace",
-      site.sendFile(__dirname, 'art', 'fox cycle 31 TRACE + ear + 07.25.png'))
+      site.sendFile(
+        __dirname,
+        "art",
+        "fox cycle 31 TRACE + ear + 07.25.png"))
 
     site.start(
       8221)})

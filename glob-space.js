@@ -4,7 +4,16 @@ module.exports = library.export(
   "glob-space",
   function() {
 
-    function GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels) {
+    // So, I almost think we should be passing in globs, rather than "owning" them.
+
+    // (Or even just passing in when we need to. Although we do use them in quite a lot of functions with the start/nudge/getAllPixels/etc. It's not like there are just one or two globs functions in here.
+
+    // But back to the immediate concern:
+
+    // Do we need to be passing in a scale here? 
+    I think so.
+
+    function GlobSpace(canvasId, GLOB_SIZE, canvasWidthInPixels, canvasHeightInPixels, scale) {
       this.globs = []
       this.canvasId = canvasId
       this.GLOB_SIZE = GLOB_SIZE
