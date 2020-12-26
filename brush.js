@@ -134,6 +134,46 @@ module.exports = library.export(
             [])
           scene.draw()})
 
+
+/////////
+
+    function activeGlob() {
+      if (this.activeGlobIndex != null) {
+        return this.globs[
+          this.activeGlobIndex]}}
+
+    function start(rectX,rectY, color) {
+      this.activeGlobIndex = this.globs.length
+      this.activeGlobStartRectX = rectX
+      this.activeGlobStartRectY = rectY
+      this.globs.push({
+        "x": Math.floor(
+          rectX/this.GLOB_SIZE),
+        "y": Math.floor(
+          rectY/this.GLOB_SIZE),
+        "nudgeX": 0,
+        "nudgeY": 0,
+        "color": color})}
+
+    function nudge(rectX,rectY) {
+      var dx = rectX - this.activeGlobStartRectX
+      var dy = rectY - this.activeGlobStartRectY
+
+      this.globs[this.activeGlobIndex].nudgeX = dx/this.GLOB_SIZE
+      this.globs[this.activeGlobIndex].nudgeY = dy/this.GLOB_SIZE}
+
+    function pop() {
+      return this.globs.pop()}
+
+    function push(glob) {
+      this.activeGlobIndex = undefined
+      return this.globs.push(glob)}
+
+    function end() {
+      this.activeGlobIndex = undefined}
+
+////////
+
       var events = {
         "mouseMove": mouseMove,
         "brushDown": brushDown,

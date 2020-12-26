@@ -186,9 +186,11 @@ library.using([
 
         // TODO
 
-        // - Add a resolution parameter to glob space
-
         // - Share a single glob space between critter and brush (and move start/stop into brush)
+
+        // - Add a test for GlobSpace
+
+        // - Add a resolution parameter to glob space
 
         var brushCanvasId = element.anId()
 

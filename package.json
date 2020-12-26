@@ -1,4 +1,5 @@
 {
+  "main": "aperture.js",
   "dependencies": {
     "basic-styles": "*",
     "bridge-module": "*",
@@ -8,5 +9,7 @@
     "web-element": "*",
     "web-site": "*"
   },
-  "main": "aperture.js"
+  "devDependencies": {
+    "run-test": "*"
+  }
 }
