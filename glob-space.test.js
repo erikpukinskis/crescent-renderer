@@ -1,8 +1,8 @@
 var runTest = require("run-test")(require)
 
 function expectClosePoints(expect,a,b) {
-  expect(a[0]).to.be.closeTo(b[0], 0.0001)
-  expect(a[1]).to.be.closeTo(b[1], 0.0001)
+  expect(a[0]).to.be.closeTo(b[0], 0.0001, "x coordinates do not match")
+  expect(a[1]).to.be.closeTo(b[1], 0.0001, "y coordinates do not match")
 }
 
 runTest(
@@ -19,7 +19,6 @@ runTest(
     // So let's test that...
 
     var space = new GlobSpace(
-
       // getting canvas coordinates is independent of the canvas origin, we just use that for the getGlobX/getGlobY functions that handle a mouse event. So we can just use undefined for the rect
       undefined,
 
@@ -39,6 +38,16 @@ runTest(
       expect,
       space.globPointToCanvas([0,0]),
       [-2/3,1/2])
+
+    expectClosePoints(
+      expect,
+      space.globPointToCanvas([2,1]),
+      [0,0])
+
+    expectClosePoints(
+      expect,
+      space.globPointToCanvas([3,2]),
+      [1/3,-1/2])
 
     done()
   }
