@@ -198,6 +198,40 @@ library.using([
 
         // - Add a resolution parameter to glob space
 
+        // I'm trying to get the zooming working again.
+
+        // I thought to work on dragging around the apertures, because of a hunch that it might make it easier to think about the zooming.
+
+        // But generally "one thing at a time" is a good approach.
+
+        // What needs to happen when we zoom?
+
+        // - the aperture shouldn't change size, but the contents should zoom. So, I think width on the GlobSpace should maybe decrease and then the transform on the canvas should increase
+
+        // I am a little disinclined to use DOM nesting to control the zoom. Let's think about how the different elements are different:
+
+        // - brush: will be able to move it around, outside dimensions shouldn't change with zoom
+        // - tracing image: may not have any canvas or glob space or anything, outside dimensions WILL change with zoom
+        // - critter: will likely be tiled at some scale? outside dimensions will change with zoom
+
+        // So, the issue that the brush aperture is going to stay fixed size while the critter aperture grows is enough for me to think I should undo the "zoom all the things" approach with a single transform: scale for all elements.
+
+        // And the whole point of adding the parent glob spaces was to be able to share the zoom information somehow between canvases.
+
+        // I get confused when I start thinking about the BlobSpace parameters under zoom though. So let's try to break those down:
+
+        // - blob size: this is in units of screen pixels per blob. Not sure if it should change with the zoom. The question is whether the brush size should change with the zoom or independently. It maybe simplifies the interaction if its just alway constant. But it might be good to keep the programming model clear if we handle them separately, and allow any brush size at any zoom level. Not sure.
+
+        // - resolution: this is in units of device pixels per screen pixel. That's exactly what should be changing when we zoom
+
+        // - width/height: this is in units of blobs. It will be changing for brush when we zoom, but not for critter. Although if critter becomes more of a tiled situation then we'd be slicing and dicing those tiles. Still, not something I think we need to worry about just yet.
+
+        // Then we have some outside parameters:
+
+        // - canvas transform scale: this will be changing with the zoom. I think it needs to be roughly in lock step with the resolution parameter to the blob space.
+
+        // - canvas width: this will be changing with the zoom for the brush but not the critter as of yet.
+
         var paintBrush = brush(bridge, addGlob, baseSpace, apertureWidthInPixels, apertureHeightInPixels)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
