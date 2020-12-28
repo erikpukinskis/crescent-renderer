@@ -19,6 +19,9 @@ runTest(
     // So let's test that...
 
     var space = new GlobSpace(
+      // no parent yet
+      undefined,
+
       // getting canvas coordinates is independent of the canvas origin, we just use that for the getGlobX/getGlobY functions that handle a mouse event. So we can just use undefined for the rect
       undefined,
 
@@ -29,10 +32,7 @@ runTest(
       5*6,
 
       // canvas height, in screen pixels
-      5*4,
-
-      // And we can just use a resolution of 1 for now, to keep things simple
-      1)
+      5*4)
 
     expectClosePoints(
       expect,
@@ -54,15 +54,30 @@ runTest(
 )
 
 runTest(
+  "inherit glob size, width, height, etc, from the parent",
+  ["./glob-space"],
+  function(expect, done, GlobSpace) {
+    var base = new GlobSpace(
+      undefined,
+      undefined,
+      5,
+      20,
+      30)
+
+    var space = new GlobSpace(base)
+
+    expect(space.getGlobSize()).to.equal(5)
+    expect(space.getWidth()).to.equal(20)
+    expect(space.getHeight()).to.equal(30)
+
+    done()
+  })
+
+runTest(
   "zooming")
 
 runTest(
   "offset")
 
 runTest(
-  "getting pixels in a Float32Array",
-  ["./glob-space"],
-  function(expect, done, GlobSpace) {
-    // getAllPixels
-    done()
-  })
+  "getting pixels in a Float32Array")

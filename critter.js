@@ -11,11 +11,25 @@ module.exports = library.export(
         "position": "absolute",
         "background": "rgba(0,0,0,0.05)",
         "border": "none"}),
-      function(bridge, globs, canvasId, width, height) {
+      function(bridge, parentSpace, width, height) {
 
-        this.addAttribute(
-          "id",
-          canvasId)
+        this.assignId()
+
+        var globs = bridge.defineSingleton(
+          "foxGlobs",
+          function() {
+            return []})
+
+        var space = bridge.defineSingleton(
+          "fox",[
+          bridgeModule(
+            lib,
+            "./glob-space",
+            bridge),
+          parentSpace],
+          function(GlobSpace, parentSpace) {
+            return new GlobSpace(
+              parentSpace)})
 
         var scene = bridge.defineSingleton(
           'scene',[
@@ -26,57 +40,55 @@ module.exports = library.export(
           function critterScene(ShaderScene) {
             return new ShaderScene()})
 
-        bridge.domReady([
-          scene,
-          canvasId],
-          function critterInit(scene, canvasId) {
-            var canvas = document.getElementById(
-              canvasId)
-            scene.init(
-              canvas)})
-
         this.addAttributes({
           "width": width+"px",
           "height": height+"px"})
 
-        this.__addGlobBinding = defineOn(bridge).withArgs(globs, scene)
+        defineOn(bridge)
+
+        this.__addGlobBinding = bridge.remember(
+          "warrens/addGlob").
+          withArgs(
+            globs,
+            space,
+            scene)
 
         bridge.domReady([
-          canvasId,
-          scene],
-          function initScene(critterCanvasId, scene) {
+          this.id,
+          scene,
+          space],
+          function initCritter(canvasId, scene, space) {
             var canvas = document.getElementById(
-              critterCanvasId)
+              canvasId)
             scene.init(
-              canvas)})})
+              canvas)
+            space.getCanvasRect(
+              canvas)})
+      })
 
     function defineOn(bridge) {
-      var addGlobBinding = bridge.remember("critter")
-      if (addGlobBinding) return addGlobBinding
+      if (bridge.remember(
+        "warrens/addGlob")) {
+        return }
 
       bridge.addToHead(
         element.stylesheet(
           critter))
 
-      addGlobBinding = bridge.defineFunction(
-        function addGlob(globs, scene, glob) {
-          globs.push(glob)
-          var points = globs.getAllPixels()
-          scene.bufferPoints(points)
-          scene.draw()})
-
       bridge.see(
-        "critter",
-        addGlobBinding)
-
-      return addGlobBinding
+        "warrens/addGlob",
+        bridge.defineFunction(
+        function addGlob(globs, space, scene, glob) {
+          globs.push(glob)
+          var points = space.getAllPixels(globs)
+          scene.bufferPoints(points)
+          scene.draw()}))
     }
 
-    function getAddGlobBinding(critterElement) {
-      return critterElement.__addGlobBinding
-    }
+    critter.getAddGlobBinding =
+      function getAddGlobBinding(critterElement) {
+        return critterElement.__addGlobBinding }
 
-    critter.getAddGlobBinding = getAddGlobBinding
     critter.defineOn = defineOn
 
     return critter

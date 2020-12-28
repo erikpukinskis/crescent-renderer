@@ -10,15 +10,28 @@ module.exports = library.export(
       element.style({
         "position": "absolute",
         "border": "none"}),
-      function(bridge, brushGlobs, addGlob, canvasId, width, height) {
-        var events = bridge.remember(
-          "warrens/brush")
+      function(bridge, addGlob, parentSpace, width, height) {
+        this.assignId()
 
-        this.addAttribute(
-          "id",
-          canvasId)
+        var space = bridge.defineSingleton(
+          "brushSpace", [
+          bridgeModule(
+            lib,
+            "./glob-space",
+            bridge),
+          parentSpace,
+          this.id],
+          function(GlobSpace, parentSpace, canvasId) {
+            return new GlobSpace(
+              parentSpace)})
 
-        var scene = bridge.defineSingleton(
+        var glob = bridge.defineSingleton(
+          "brushGlob",
+          function() {
+            return {
+              down: false }})
+
+        var scene = this.__scene = bridge.defineSingleton(
           'scene',[
           bridgeModule(
             lib,
@@ -27,16 +40,7 @@ module.exports = library.export(
           function brushScene(ShaderScene) {
             return new ShaderScene()})
 
-        bridge.domReady([
-          scene,
-          canvasId],
-          function brushInit(scene, canvasId) {
-            var canvas = document.getElementById(
-              canvasId)
-            scene.init(
-              canvas)})
-
-        this.__color = bridge.defineSingleton(
+        var color = this.__color = bridge.defineSingleton(
           "color",
           function() {
             function Color(){}
@@ -46,154 +50,143 @@ module.exports = library.export(
               return this.color}
             return new Color()})
 
+        defineOn(bridge)
+
         this.addAttributes({
           "width": width+"px",
           "height": height+"px",
-          "onmousemove": events.mouseMove.
-            withArgs(scene, brushGlobs, this.__color, bridge.event).
+          "onmousedown": bridge.remember(
+              "warrens/brushDown").
+              withArgs(
+                scene,
+                space,
+                glob,
+                color,
+                bridge.event).
+              evalable(),
+          "onmouseup": bridge.remember(
+            "warrens/brushUp").
+              withArgs(
+                addGlob,
+                scene,
+                color,
+                glob,
+                bridge.event).
             evalable(),
-          "onmousedown": events.brushDown.
-            withArgs(brushGlobs, this.__color, bridge.event).
-            evalable(),
-          "onmouseup": events.brushUp.
-            withArgs(scene, brushGlobs, addGlob, bridge.event).
-            evalable(),
-          "onmouseout": events.setBrushVisible.
-            withArgs(scene, false).
-            evalable(),
-          "onmouseenter": events.setBrushVisible.
-            withArgs(
-              scene,
-              true).
-            evalable()})
-
-        this.__scene = scene
+          "onmousemove": bridge.remember(
+            "warrens/brushMove").
+              withArgs(
+                scene,
+                space,
+                glob,
+                color,
+                bridge.event).
+              evalable(),
+          "onmouseout": bridge.remember(
+            "warrens/brushHide").
+              withArgs(
+                scene).
+              evalable()})
 
         bridge.domReady([
-          canvasId,
-          scene],
-          function initScene(canvasId, scene) {
+          this.id,
+          scene,
+          space],
+          function initBrush(canvasId, scene, space) {
             var canvas = document.getElementById(
               canvasId)
             scene.init(
-              canvas)})})
+              canvas)
+            space.getCanvasRect(
+              canvas)})
+      })
 
     function defineOn(bridge) {
-
-      var events = bridge.remember(
-        "warrens/brush")
-
-      if (events) return events
+      if (bridge.remember(
+        "warrens/brushDown")) {
+        return }
 
       bridge.addToHead(
         element.stylesheet(
           brush))
 
-      var mouseMove = bridge.defineFunction(
-        function handleMouseMove(scene, globs, color, event) {
+      bridge.see(
+        "warrens/brushDown",
+        bridge.defineFunction(
+          function brushDown(scene, space, glob, color, event) {
+            var x = space.getRectX(event)
+            var y = space.getRectY(event)
 
-          var x
-          var y
-
-          var activeGlob = globs.activeGlob()
-          if (activeGlob) {
-            globs.nudge(
-              globs.getRectX(event),
-              globs.getRectY(event))
-            x = activeGlob.x + activeGlob.nudgeX
-            y = activeGlob.y + activeGlob.nudgeY
-          } else {
-            x = globs.getGlobX(event)
-            y = globs.getGlobY(event)
-          }
-
-          var c = color.get()
-
-          if (!c) return
-
-          var points = globs.getPixel(x, y, c)
-
-          scene.bufferPoints(points)
-          scene.draw()})
-
-      var brushDown = bridge.defineFunction(
-        function handleBrushDown(globs, color, event) {
-          globs.start(
-            globs.getRectX(event),
-            globs.getRectY(event),
-            color.get())})
-
-      var brushUp = bridge.defineFunction(
-        function handleBrushUp(scene, brushGlobs, addGlob, event) {
-          var glob = brushGlobs.pop()
-          addGlob(
-            glob)})
-
-      var setBrushVisible = bridge.defineFunction(function setBrushVisible(scene, isVisible) {
-          scene.bufferPoints(
-            [])
-          scene.draw()})
-
-
-/////////
-
-    function activeGlob() {
-      if (this.activeGlobIndex != null) {
-        return this.globs[
-          this.activeGlobIndex]}}
-
-    function start(rectX,rectY, color) {
-      this.activeGlobIndex = this.globs.length
-      this.activeGlobStartRectX = rectX
-      this.activeGlobStartRectY = rectY
-      this.globs.push({
-        "x": Math.floor(
-          rectX/this.GLOB_SIZE),
-        "y": Math.floor(
-          rectY/this.GLOB_SIZE),
-        "nudgeX": 0,
-        "nudgeY": 0,
-        "color": color})}
-
-    function nudge(rectX,rectY) {
-      var dx = rectX - this.activeGlobStartRectX
-      var dy = rectY - this.activeGlobStartRectY
-
-      this.globs[this.activeGlobIndex].nudgeX = dx/this.GLOB_SIZE
-      this.globs[this.activeGlobIndex].nudgeY = dy/this.GLOB_SIZE}
-
-    function pop() {
-      return this.globs.pop()}
-
-    function push(glob) {
-      this.activeGlobIndex = undefined
-      return this.globs.push(glob)}
-
-    function end() {
-      this.activeGlobIndex = undefined}
-
-////////
-
-      var events = {
-        "mouseMove": mouseMove,
-        "brushDown": brushDown,
-        "brushUp": brushUp,
-        "setBrushVisible": setBrushVisible
-      }
+            glob.down = true
+            glob.x = space.getGlobX(event)
+            glob.y = space.getGlobY(event)
+            glob.startRectX = x
+            glob.startRectY = y }))
 
       bridge.see(
-        "warrens/brush",
-        events)
+        "warrens/brushUp",
+        bridge.defineFunction(
+          function brushUp(addGlob, scene, color, glob, event) {
+            glob.down = false
+            scene.bufferPoints(
+              [])
+            var copy = {
+              x: glob.x,
+              y: glob.y,
+              nudgeX: glob.nudgeX,
+              nudgeY: glob.nudgeY,
+              color: color.get()
+            }
+            addGlob(
+              copy)}))
 
-      return events}
+      bridge.see(
+        "warrens/brushMove",
+        bridge.defineFunction(
+          function brushMove(scene, space, glob, color, event) {
 
-    function getPickColorBinding(brushElement) {
-      return brushElement.__color.methodCall(
-        'set')
+            if (!color.get()) return
+
+            if (glob.down) {
+              var x = space.getRectX(event)
+              var y = space.getRectY(event)
+
+              var dx = x - glob.startRectX
+              var dy = y - glob.startRectY
+              glob.nudgeX = dx/space.getGlobSize()
+              glob.nudgeY = dy/space.getGlobSize()
+
+              var globX = glob.x + glob.nudgeX
+              var globY = glob.y + glob.nudgeY
+
+            } else {
+              var globX = space.getGlobX(event)
+              var globY = space.getGlobY(event)
+            }
+
+            var points = space.getPixel(
+              globX,
+              globY,
+              color.get())
+
+            scene.bufferPoints(points)
+            scene.draw()}))
+
+      bridge.see(
+        "warrens/brushHide",
+        bridge.defineFunction(
+          function brushHide(scene) {
+            scene.bufferPoints(
+              [])
+            scene.draw()}))
     }
 
+    brush.getPickColorBinding =
+      function getPickColorBinding(brushElement) {
+        return brushElement.__color.methodCall(
+          'set')}
+
     brush.defineOn = defineOn
-    brush.getPickColorBinding = getPickColorBinding
 
     return brush
   }

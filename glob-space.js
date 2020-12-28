@@ -4,13 +4,23 @@ module.exports = library.export(
   "glob-space",
   function() {
 
-    function GlobSpace(rect, globSize, width, height, resolution) {
+    function GlobSpace(parent, rect, globSize, width, height, resolution) {
       this.rect = rect
       this.globSize = globSize
       this.width = width
       this.height = height
       this.resolution = resolution
+      this.parent = parent
     }
+
+    GlobSpace.prototype.getGlobSize = function getGlobSize() {
+      return this.globSize || this.parent.getGlobSize() }
+
+    GlobSpace.prototype.getWidth = function getWidth() {
+      return this.width || this.parent.getWidth() }
+
+    GlobSpace.prototype.getHeight = function getHeight() {
+      return this.height || this.parent.getHeight() }
 
     GlobSpace.prototype.globPointToCanvas =
       function globPointToCanvas(point) {
@@ -22,53 +32,49 @@ module.exports = library.export(
 
     GlobSpace.prototype.globXToCanvasX =
       function globXToCanvasX(globX) {
-          var pixels = globX * this.globSize
-          pixels = pixels + this.globSize
-          var canvasX = 2*pixels/this.width - 1
+          var pixels = globX * this.getGlobSize()
+          pixels = pixels + this.getGlobSize()
+          var canvasX = 2*pixels/this.getWidth() - 1
+          if (Number.isNaN(canvasX)) {
+            debugger }
           return canvasX }
 
     GlobSpace.prototype.globYToCanvasY =
       function globYToCanvasY(globY) {
-          var pixels = globY * this.globSize
-          pixels = pixels + this.globSize
-          var canvasX = -2*pixels/this.height + 1
-          return canvasX }
+          var pixels = globY * this.getGlobSize()
+          pixels = pixels + this.getGlobSize()
+          var canvasY = -2*pixels/this.getHeight() + 1
+          if (Number.isNaN(canvasY)) {
+            debugger }
+          return canvasY }
 
-    GlobSpace.prototype.getRect =
-      function(canvasId) {
-        if (this.rect) {
-          return this.rect
-        }
-        var canvas = document.getElementById(
-          canvasId)
+    GlobSpace.prototype.getCanvasRect =
+      function(canvas) {
         var gl = canvas.getContext(
           'experimental-webgl')
-        this.rect = gl.canvas.getBoundingClientRect()
-        return this.rect}
+        this.rect = gl.canvas.getBoundingClientRect()}
 
     GlobSpace.prototype.getRectX =
       function(event) {
-        var canvasLeft = this.getRect()
-            .left
+        var canvasLeft = this.rect.left
         return event.clientX - canvasLeft }
 
     GlobSpace.prototype.getRectY =
       function(event) {
-        var canvasTop = this.getRect()
-            .top
+        var canvasTop = this.rect.top
         return event.clientY - canvasTop }
 
     GlobSpace.prototype.getGlobX =
-      function( event) {
+      function(event) {
         var rectX = this.getRectX(event)
         return Math.floor(
-          rectX / this.globSize)}
+          rectX / this.getGlobSize())}
 
     GlobSpace.prototype.getGlobY =
       function(event) {
         var rectY = this.getRectY(event)
         return Math.floor(
-          rectY / this.globSize)}
+          rectY / this.getGlobSize())}
 
     GlobSpace.prototype.getPixel = function(x, y, color, points, offset) {
       if (!points) {
@@ -85,6 +91,9 @@ module.exports = library.export(
           space.globYToCanvasY(
             globY)],
           offset*36+index*6)
+        if (!color) {
+          debugger
+        }
         points.set(color, offset*36+index*6+2)
       }
 
@@ -103,11 +112,14 @@ module.exports = library.export(
 
       var space = this
 
-      this.globs.forEach(
+      globs.forEach(
         function(glob, offset) {
           x = glob.x + glob.nudgeX
           y = glob.y + glob.nudgeY
 
+          if (Number.isNaN(x) || Number.isNaN(y)) {
+            debugger
+          }
 
           space.getPixel(x, y, glob.color, points, offset)
         })

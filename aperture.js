@@ -24,7 +24,6 @@ library.using([
     var APERTURE_WIDTH = 8*ZOOM
     var APERTURE_HEIGHT = 6*ZOOM
 
-    // These two vars are dupliated in brush.js, which is questionable:
     var apertureWidthInPixels = APERTURE_WIDTH * GLOB_SIZE
     var apertureHeightInPixels = APERTURE_HEIGHT * GLOB_SIZE
 
@@ -81,7 +80,6 @@ library.using([
         } else {
           return string}})
 
-    brush.defineOn(baseBridge, getQueryParam)
     critter.defineOn(baseBridge)
 
     baseBridge.addToHead(
@@ -165,49 +163,42 @@ library.using([
 
         var tracingImage = tracer()
 
-        var foxCanvasId = element.anId()
-
-        var foxGlobs = bridge.defineSingleton(
-          "fox",[
+        var baseSpace = bridge.defineSingleton(
+          "baseSpace",[
           bridgeModule(
             lib,
             "./glob-space",
             baseBridge),
-          foxCanvasId,
           GLOB_SIZE,
           apertureWidthInPixels,
           apertureHeightInPixels],
-          function(GlobSpace, foxCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels) {
-            return new GlobSpace(foxCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels)})
+          function(GlobSpace, GLOB_SIZE, width, height) {
+            const space = new GlobSpace(
+              undefined,
+              undefined,
+              GLOB_SIZE,
+              width,
+              height)
 
-        var fox = critter(bridge, foxGlobs, foxCanvasId, apertureWidthInPixels, apertureHeightInPixels)
+            return space})
+
+        var fox = critter(
+          bridge,
+          baseSpace,
+          apertureWidthInPixels,
+          apertureHeightInPixels)
 
         var addGlob = critter.getAddGlobBinding(fox)
 
         // TODO
 
-        // - Share a single glob space between critter and brush (and move start/stop into brush)
+        // ✓ Share a single glob space between critter and brush (and move start/stop into brush)
 
-        // - Add a test for GlobSpace
+        // ✓ Add a test for GlobSpace
 
         // - Add a resolution parameter to glob space
 
-        var brushCanvasId = element.anId()
-
-        var brushGlobs = bridge.defineSingleton(
-          "brush", [
-          bridgeModule(
-            lib,
-            "./glob-space",
-            baseBridge),
-          brushCanvasId,
-          GLOB_SIZE,
-          apertureWidthInPixels,
-          apertureHeightInPixels],
-          function(GlobSpace, brushCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels) {
-            return new GlobSpace(brushCanvasId, GLOB_SIZE, apertureWidthInPixels, apertureHeightInPixels)})
-
-        var paintBrush = brush(bridge, brushGlobs, addGlob, brushCanvasId, apertureWidthInPixels, apertureHeightInPixels)
+        var paintBrush = brush(bridge, addGlob, baseSpace, apertureWidthInPixels, apertureHeightInPixels)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
