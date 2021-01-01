@@ -2,16 +2,16 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "glob-space",
-  function() {
+  [library.ref()],
+  function(lib) {
 
     function GlobSpace(parent, rect, globSize, width, height, resolution) {
+      this.parent = parent
       this.rect = rect
       this.globSize = globSize
       this.width = width
       this.height = height
       this.resolution = resolution
-      this.parent = parent
-      console.log(this)
     }
 
     GlobSpace.prototype.setResolution = function setResolution(resolution) {
@@ -136,6 +136,30 @@ module.exports = library.export(
 
       return points
     }
+
+    GlobSpace.prototype.defineOn = function defineOn(bridge, name) {
+      if (this.parent) {
+        var parent = this.parent.defineOn(
+          bridge,
+          "baseSpace")
+      }
+
+      var spaceBinding = bridge.defineSingleton(
+        name,[
+        lib.module("glob-space"),
+        parent || null,
+        this],
+        function(GlobSpace, parent, space) {
+          return new GlobSpace(
+            parent,
+            space.rect,
+            space.globSize,
+            space.width,
+            space.height,
+            space.resolution)})
+
+      return spaceBinding }
+
 
     return GlobSpace
   }

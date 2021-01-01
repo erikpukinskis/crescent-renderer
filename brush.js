@@ -2,8 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "brush",
-  [library.ref(), "web-element", "bridge-module"],
-  function(lib, element, bridgeModule) {
+  [library.ref(), "web-element", "bridge-module", "glob-space"],
+  function(lib, element, bridgeModule, GlobSpace) {
 
     var brush = element.template(
       "canvas.brush",
@@ -11,20 +11,12 @@ module.exports = library.export(
         "position": "absolute",
         "border": "none",
         "background": "rgba(0,0,100,0.1)"}),
-      function(bridge, addGlob, parentSpace, width, height) {
+      function(bridge, addGlob, parentSpace) {
         this.assignId()
 
-        var space = this.__space = bridge.defineSingleton(
-          "brushSpace", [
-          bridgeModule(
-            lib,
-            "./glob-space",
-            bridge),
-          parentSpace,
-          this.id],
-          function(GlobSpace, parentSpace, canvasId) {
-            return new GlobSpace(
-              parentSpace)})
+        var space = new GlobSpace(parentSpace)
+
+        var spaceBinding = this.__space = space.defineOn(bridge, "brushSpace")
 
         var glob = bridge.defineSingleton(
           "brushGlob",
@@ -54,13 +46,13 @@ module.exports = library.export(
         defineOn(bridge)
 
         this.addAttributes({
-          "width": width+"px",
-          "height": height+"px",
+          "width": space.getWidth()+"px",
+          "height": space.getHeight()+"px",
           "onmousedown": bridge.remember(
               "warrens/brushDown").
               withArgs(
                 scene,
-                space,
+                spaceBinding,
                 glob,
                 color,
                 bridge.event).
@@ -78,7 +70,7 @@ module.exports = library.export(
             "warrens/brushMove").
               withArgs(
                 scene,
-                space,
+                spaceBinding,
                 glob,
                 color,
                 bridge.event).
@@ -92,7 +84,7 @@ module.exports = library.export(
         bridge.domReady([
           this.id,
           scene,
-          space],
+          spaceBinding],
           function initBrush(canvasId, scene, space) {
             var canvas = document.getElementById(
               canvasId)

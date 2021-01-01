@@ -2,8 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "critter",
-  [library.ref(), "web-element", "bridge-module"],
-  function(lib, element, bridgeModule) {
+  [library.ref(), "web-element", "bridge-module", "./glob-space"],
+  function(lib, element, bridgeModule, GlobSpace) {
 
     var critter = element.template(
       "canvas.critter",
@@ -11,7 +11,7 @@ module.exports = library.export(
         "position": "absolute",
         "background": "rgba(100,0,0,0.1)",
         "border": "none"}),
-      function(bridge, parentSpace, width, height) {
+      function(bridge, parentSpace) {
 
         this.assignId()
 
@@ -20,16 +20,9 @@ module.exports = library.export(
           function() {
             return []})
 
-        var space = bridge.defineSingleton(
-          "fox",[
-          bridgeModule(
-            lib,
-            "./glob-space",
-            bridge),
-          parentSpace],
-          function(GlobSpace, parentSpace) {
-            return new GlobSpace(
-              parentSpace)})
+        var space = new GlobSpace(parentSpace)
+
+        var spaceBinding = this.__space = space.defineOn(bridge, "brushSpace")
 
         var scene = bridge.defineSingleton(
           'scene',[
@@ -41,8 +34,8 @@ module.exports = library.export(
             return new ShaderScene()})
 
         this.addAttributes({
-          "width": width+"px",
-          "height": height+"px"})
+          "width": space.getWidth()+"px",
+          "height": space.getHeight()+"px"})
 
         defineOn(bridge)
 
@@ -50,13 +43,13 @@ module.exports = library.export(
           "warrens/addGlob").
           withArgs(
             globs,
-            space,
+            spaceBinding,
             scene)
 
         bridge.domReady([
           this.id,
           scene,
-          space],
+          spaceBinding],
           function initCritter(canvasId, scene, space) {
             var canvas = document.getElementById(
               canvasId)

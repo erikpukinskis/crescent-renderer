@@ -13,7 +13,7 @@ library.using([
   "basic-styles",
   "./brush",
   "./critter"],
-  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, __, basicStyles, brush, critter) {
+  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, GlobSpace, basicStyles, brush, critter) {
 
     var baseBridge = new BrowserBridge()
     basicStyles.addTo(baseBridge)
@@ -91,28 +91,27 @@ library.using([
         "title",
         "Trace Frames"))
 
-    var aperture = element.template(
-      ".aperture",
+    var positioned = element.template(
+      ".positioned",
       element.style({
         "transform-origin": "top left",
-        "position": "relative"}),
+        "position": "absolute"}),
       function(scale) {
-        this.assignId()
-        if (!scale) {
-          return }
-        this.appendStyles({
-          "transform": "scale("+scale+")"})})
+        this.assignId()})
+
+    function position(element, scale) {
+      element.appendStyles({
+        "transform": "scale("+scale+")"})}
 
     var tracer = element.template(
       ".tracer",
-      "img",
-      element.style({
-        "position": "absolute"}),{
+      positioned,
+      "img",{
       "src": "/trace"})
 
     baseBridge.addToHead(
       element.stylesheet([
-        aperture,
+        positioned,
         tracer]))
 
     function getZoomScale(zoomLevel) {
@@ -132,13 +131,13 @@ library.using([
       baseBridge.defineFunction(getZoomScale),
       apertureWidthInPixels,
       apertureHeightInPixels],
-      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, apertureId, brushId, setBrushResolution, zoomIncrement) {
+      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, tracingImageId, critterId, setBrushResolution, zoomIncrement) {
         var zoomLevel = getQueryParam("zoom", parseInt) || 0
         zoomLevel += zoomIncrement
         var scale = getZoomScale(zoomLevel)
 
-        var aperture = document.getElementById(
-            apertureId)
+        var tracingImage = document.getElementById(
+            tracingImageId)
         aperture.style.transform = "scale("+scale+")"
 
         var brush = document.getElementById(
@@ -155,16 +154,13 @@ library.using([
 
     var zoomButton = element.template(
       "button",
-      function(apertureId, brushId, setBrushResolution, zoomIncrement) {
-        var zoom = zoomBy.withArgs(
-            apertureId,
-            brushId,
-            setBrushResolution,
-            zoomIncrement)
+      function(zoom, zoomIncrement) {
         var direction = zoomIncrement > 0 ? "In" : "Out"
         this.addChild("Zoom "+direction)
         this.addAttributes({
-          "onclick": zoom.evalable()})})
+          "onclick": zoom.withArgs(
+            zoomIncrement).
+            evalable()})})
 
     site.addRoute(
       "get",
@@ -179,33 +175,19 @@ library.using([
           response)
 
         var tracingImage = tracer()
+        position(tracingImage, scale)
 
-        var baseSpace = bridge.defineSingleton(
-          "baseSpace",[
-          bridgeModule(
-            lib,
-            "./glob-space",
-            baseBridge),
+        var baseSpace = new GlobSpace(
+          undefined,
+          undefined,
           GLOB_SIZE,
-          scale,
           apertureWidthInPixels,
-          apertureHeightInPixels],
-          function(GlobSpace, GLOB_SIZE, scale, width, height) {
-            const space = new GlobSpace(
-              undefined,
-              undefined,
-              GLOB_SIZE,
-              width,
-              height,
-              1/scale)
-
-            return space})
+          apertureHeightInPixels,
+          1/scale)
 
         var fox = critter(
           bridge,
-          baseSpace,
-          apertureWidthInPixels,
-          apertureHeightInPixels)
+          baseSpace)
 
         var addGlob = critter.getAddGlobBinding(fox)
 
@@ -232,7 +214,10 @@ library.using([
 
         // - canvas width: this will be changing with the zoom for the brush but not the critter as of yet.
 
-        var paintBrush = brush(bridge, addGlob, baseSpace, apertureWidthInPixels/scale, apertureHeightInPixels/scale)
+        var paintBrush = brush(
+          bridge,
+          addGlob,
+          baseSpace)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
@@ -270,27 +255,29 @@ library.using([
             219,
             138)]
 
-        var app = aperture(
-          scale)
+        var app = element(
+          element.style({
+            "position": "relative" }))
 
         app.addChildren([
           tracingImage,
           fox,
           paintBrush])
 
+        var zoom = zoomBy.withArgs(
+          tracingImage.id,
+          critter.id,
+          setBrushResolution)
+
         bridge.send([
           element(
           "p",[
             zoomButton(
-              app.id,
-              paintBrush.id,
-              setBrushResolution,
+              zoom,
               1),
             " ",
             zoomButton(
-              app.id,
-              paintBrush.id,
-              setBrushResolution,
+              zoom,
               -1)]),
           element(
             "p",
