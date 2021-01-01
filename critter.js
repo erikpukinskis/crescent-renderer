@@ -9,7 +9,7 @@ module.exports = library.export(
       "canvas.critter",
       element.style({
         "position": "absolute",
-        "background": "rgba(0,0,0,0.05)",
+        "background": "rgba(100,0,0,0.1)",
         "border": "none"}),
       function(bridge, parentSpace, width, height) {
 

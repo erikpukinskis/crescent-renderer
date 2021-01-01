@@ -96,13 +96,12 @@ library.using([
       element.style({
         "transform-origin": "top left",
         "position": "relative"}),
-      function(zoomLevel) {
+      function(scale) {
         this.assignId()
-        if (!zoomLevel) {
+        if (!scale) {
           return }
         this.appendStyles({
-          "transform": getZoomTransform(
-            zoomLevel)})})
+          "transform": "scale("+scale+")"})})
 
     var tracer = element.template(
       ".tracer",
@@ -116,7 +115,7 @@ library.using([
         aperture,
         tracer]))
 
-    function getZoomTransform(zoomLevel) {
+    function getZoomScale(zoomLevel) {
       var scale
         if (zoomLevel == 0) {
           scale = 1}
@@ -125,26 +124,42 @@ library.using([
         } else {
           scale = 1*(zoomLevel+1)
         }
-        return "scale("+scale+")"}
+        return scale}
 
-    var zoomBy = baseBridge.defineFunction(
-      [getQueryParam, setQueryParam, getZoomTransform],
-      function zoomBy(getQueryParam, setQueryParam, getZoomTransform, elementId, zoomIncrement) {
+    var zoomBy = baseBridge.defineFunction([
+      getQueryParam,
+      setQueryParam,
+      baseBridge.defineFunction(getZoomScale),
+      apertureWidthInPixels,
+      apertureHeightInPixels],
+      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, apertureId, brushId, setBrushResolution, zoomIncrement) {
         var zoomLevel = getQueryParam("zoom", parseInt) || 0
         zoomLevel += zoomIncrement
-        var element = document.getElementById(
-            elementId)
-        element.style.transform = getZoomTransform(zoomLevel)
+        var scale = getZoomScale(zoomLevel)
+
+        var aperture = document.getElementById(
+            apertureId)
+        aperture.style.transform = "scale("+scale+")"
+
+        var brush = document.getElementById(
+            brushId)
+        brush.width = apertureWidthInPixels/scale
+        brush.height = apertureHeightInPixels/scale
+
+        setBrushResolution(1/scale)
 
         setQueryParam(
           "zoom",
-          zoomLevel)})
+          zoomLevel)
+      })
 
     var zoomButton = element.template(
       "button",
-      function(elementId, zoomIncrement) {
+      function(apertureId, brushId, setBrushResolution, zoomIncrement) {
         var zoom = zoomBy.withArgs(
-            elementId,
+            apertureId,
+            brushId,
+            setBrushResolution,
             zoomIncrement)
         var direction = zoomIncrement > 0 ? "In" : "Out"
         this.addChild("Zoom "+direction)
@@ -155,9 +170,11 @@ library.using([
       "get",
       "/flurble",
       function(request, response) {
-        var zoomLevel = request.query.zoom
-        var colorParam = request.query.color
-        var color = new Float32Array(colorParam.split("**"))
+        var scale = getZoomScale(
+          request.query.zoom)
+        var color = new Float32Array(
+          request.query.color.
+            split("**"))
         var bridge = baseBridge.forResponse(
           response)
 
@@ -170,15 +187,17 @@ library.using([
             "./glob-space",
             baseBridge),
           GLOB_SIZE,
+          scale,
           apertureWidthInPixels,
           apertureHeightInPixels],
-          function(GlobSpace, GLOB_SIZE, width, height) {
+          function(GlobSpace, GLOB_SIZE, scale, width, height) {
             const space = new GlobSpace(
               undefined,
               undefined,
               GLOB_SIZE,
               width,
-              height)
+              height,
+              1/scale)
 
             return space})
 
@@ -190,33 +209,14 @@ library.using([
 
         var addGlob = critter.getAddGlobBinding(fox)
 
-        // TODO
+        // Not sure really what I'm doing here. I think zooming these different pieces in lockstep probably has to stop. When I zoom out to -1, the canvas width attribute doubles, even though it's the same size on screen. That seems really wrong. Like, wouldn't we necessarily be rendering 2x more than we need at that point?
 
-        // ✓ Share a single glob space between critter and brush (and move start/stop into brush)
+        // Some lines I'm drawing here to keep things simple:
 
-        // ✓ Add a test for GlobSpace
+        // Don't worry about low res resolution, just assume the device resolution in glob space is the CSS screen resolution.
 
-        // - Add a resolution parameter to glob space
+        // Just do the glue-up. Don't worry too much about architecture.
 
-        // I'm trying to get the zooming working again.
-
-        // I thought to work on dragging around the apertures, because of a hunch that it might make it easier to think about the zooming.
-
-        // But generally "one thing at a time" is a good approach.
-
-        // What needs to happen when we zoom?
-
-        // - the aperture shouldn't change size, but the contents should zoom. So, I think width on the GlobSpace should maybe decrease and then the transform on the canvas should increase
-
-        // I am a little disinclined to use DOM nesting to control the zoom. Let's think about how the different elements are different:
-
-        // - brush: will be able to move it around, outside dimensions shouldn't change with zoom
-        // - tracing image: may not have any canvas or glob space or anything, outside dimensions WILL change with zoom
-        // - critter: will likely be tiled at some scale? outside dimensions will change with zoom
-
-        // So, the issue that the brush aperture is going to stay fixed size while the critter aperture grows is enough for me to think I should undo the "zoom all the things" approach with a single transform: scale for all elements.
-
-        // And the whole point of adding the parent glob spaces was to be able to share the zoom information somehow between canvases.
 
         // I get confused when I start thinking about the BlobSpace parameters under zoom though. So let's try to break those down:
 
@@ -232,9 +232,11 @@ library.using([
 
         // - canvas width: this will be changing with the zoom for the brush but not the critter as of yet.
 
-        var paintBrush = brush(bridge, addGlob, baseSpace, apertureWidthInPixels, apertureHeightInPixels)
+        var paintBrush = brush(bridge, addGlob, baseSpace, apertureWidthInPixels/scale, apertureHeightInPixels/scale)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
+
+        var setBrushResolution = brush.getSetResolutionBinding(paintBrush)
 
         if (color.length === 4) {
           bridge.domReady(
@@ -269,7 +271,7 @@ library.using([
             138)]
 
         var app = aperture(
-          zoomLevel)
+          scale)
 
         app.addChildren([
           tracingImage,
@@ -281,10 +283,14 @@ library.using([
           "p",[
             zoomButton(
               app.id,
+              paintBrush.id,
+              setBrushResolution,
               1),
             " ",
             zoomButton(
               app.id,
+              paintBrush.id,
+              setBrushResolution,
               -1)]),
           element(
             "p",

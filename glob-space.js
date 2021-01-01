@@ -11,16 +11,26 @@ module.exports = library.export(
       this.height = height
       this.resolution = resolution
       this.parent = parent
+      console.log(this)
+    }
+
+    GlobSpace.prototype.setResolution = function setResolution(resolution) {
+      this.resolution = resolution
+      console.log('space', this)
+    }
+
+    GlobSpace.prototype.getResolution = function getResolution() {
+      return this.resolution || this.parent.getResolution()
     }
 
     GlobSpace.prototype.getGlobSize = function getGlobSize() {
-      return this.globSize || this.parent.getGlobSize() }
+      return (this.globSize ? this.globSize : this.parent.getGlobSize())}
 
     GlobSpace.prototype.getWidth = function getWidth() {
-      return this.width || this.parent.getWidth() }
+      return (this.width ? this.width : this.parent.getWidth())*this.getResolution()}
 
     GlobSpace.prototype.getHeight = function getHeight() {
-      return this.height || this.parent.getHeight() }
+      return (this.height ? this.height : this.parent.getHeight())*this.getResolution()}
 
     GlobSpace.prototype.globPointToCanvas =
       function globPointToCanvas(point) {

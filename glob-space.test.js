@@ -32,7 +32,10 @@ runTest(
       5*6,
 
       // canvas height, in screen pixels
-      5*4)
+      5*4,
+
+      // resolution
+      1)
 
     expectClosePoints(
       expect,
@@ -62,7 +65,8 @@ runTest(
       undefined,
       5,
       20,
-      30)
+      30,
+      1)
 
     var space = new GlobSpace(base)
 

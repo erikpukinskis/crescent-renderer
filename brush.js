@@ -9,11 +9,12 @@ module.exports = library.export(
       "canvas.brush",
       element.style({
         "position": "absolute",
-        "border": "none"}),
+        "border": "none",
+        "background": "rgba(0,0,100,0.1)"}),
       function(bridge, addGlob, parentSpace, width, height) {
         this.assignId()
 
-        var space = bridge.defineSingleton(
+        var space = this.__space = bridge.defineSingleton(
           "brushSpace", [
           bridgeModule(
             lib,
@@ -185,6 +186,11 @@ module.exports = library.export(
       function getPickColorBinding(brushElement) {
         return brushElement.__color.methodCall(
           'set')}
+
+    brush.getSetResolutionBinding =
+      function getSetResolutionBinding(brushElement) {
+        return brushElement.__space.methodCall(
+          'setResolution')}
 
     brush.defineOn = defineOn
 
