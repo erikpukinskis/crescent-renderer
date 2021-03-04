@@ -104,8 +104,8 @@ module.exports = library.export(
       var gl = this.gl
       if (!this.hasOwnProperty(
         "_bufferSize")) {
-        throw new Error(
-          "Can't draw if we haven't buffered any points")}
+        return console.warn(
+          "Not drawing, since we haven't buffered any points. A little odd.")}
       gl.drawArrays(
         gl.TRIANGLES,
         // first one to start at

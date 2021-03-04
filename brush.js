@@ -2,19 +2,18 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "brush",
-  [library.ref(), "web-element", "bridge-module", "glob-space"],
-  function(lib, element, bridgeModule, GlobSpace) {
+  [library.ref(), "web-element", "bridge-module", "glob-space", "./positioned"],
+  function(lib, element, bridgeModule, GlobSpace, positioned) {
 
     var brush = element.template(
       "canvas.brush",
+      positioned,
       element.style({
         "position": "absolute",
         "border": "none",
         "background": "rgba(0,0,100,0.1)"}),
-      function(bridge, addGlob, parentSpace) {
+      function(bridge, addGlob, space) {
         this.assignId()
-
-        var space = new GlobSpace(parentSpace)
 
         var spaceBinding = this.__space = space.defineOn(bridge, "brushSpace")
 

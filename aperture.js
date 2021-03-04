@@ -12,8 +12,9 @@ library.using([
   "./glob-space",
   "basic-styles",
   "./brush",
-  "./critter"],
-  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, GlobSpace, basicStyles, brush, critter) {
+  "./critter",
+  "./positioned"],
+  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, GlobSpace, basicStyles, brush, critter, positioned) {
 
     var baseBridge = new BrowserBridge()
     basicStyles.addTo(baseBridge)
@@ -91,23 +92,13 @@ library.using([
         "title",
         "Trace Frames"))
 
-    var positioned = element.template(
-      ".positioned",
-      element.style({
-        "transform-origin": "top left",
-        "position": "absolute"}),
-      function(scale) {
-        this.assignId()})
-
-    function position(element, scale) {
-      element.appendStyles({
-        "transform": "scale("+scale+")"})}
-
     var tracer = element.template(
       ".tracer",
       positioned,
       "img",{
-      "src": "/trace"})
+      "src": "/trace"},
+      function() {
+        this.assignId()})
 
     baseBridge.addToHead(
       element.stylesheet([
@@ -131,21 +122,30 @@ library.using([
       baseBridge.defineFunction(getZoomScale),
       apertureWidthInPixels,
       apertureHeightInPixels],
-      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, tracingImageId, critterId, setBrushResolution, zoomIncrement) {
+      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, tracingImageId, critterId, setCritterResolution, drawCritter, zoomIncrement) {
         var zoomLevel = getQueryParam("zoom", parseInt) || 0
         zoomLevel += zoomIncrement
         var scale = getZoomScale(zoomLevel)
 
+        // [ ] tracing image width & height ×2
+        // [ ] resolution on critter ×2
+        // [ ] critter canvas width & height ×2
+
         var tracingImage = document.getElementById(
             tracingImageId)
-        aperture.style.transform = "scale("+scale+")"
 
-        var brush = document.getElementById(
-            brushId)
-        brush.width = apertureWidthInPixels/scale
-        brush.height = apertureHeightInPixels/scale
+        tracingImage.style.transform = "scale("+scale+")"
 
-        setBrushResolution(1/scale)
+        // OK, so critter space needs to change resolution, and... double width?
+
+        // var critter = document.getElementById(
+        //     critterId)
+        // critter.width = apertureWidthInPixels/scale
+        // critter.height = apertureHeightInPixels/scale
+
+        setCritterResolution(1/scale)
+
+        drawCritter()
 
         setQueryParam(
           "zoom",
@@ -175,9 +175,9 @@ library.using([
           response)
 
         var tracingImage = tracer()
-        position(tracingImage, scale)
+        positioned.moveTo(tracingImage, scale)
 
-        var baseSpace = new GlobSpace(
+        var foxSpace = new GlobSpace(
           undefined,
           undefined,
           GLOB_SIZE,
@@ -187,7 +187,7 @@ library.using([
 
         var fox = critter(
           bridge,
-          baseSpace)
+          foxSpace)
 
         var addGlob = critter.getAddGlobBinding(fox)
 
@@ -214,10 +214,19 @@ library.using([
 
         // - canvas width: this will be changing with the zoom for the brush but not the critter as of yet.
 
+        var brushSpace = new GlobSpace(
+          undefined,
+          undefined,
+          GLOB_SIZE,
+          apertureWidthInPixels,
+          apertureHeightInPixels,
+          1/scale)
+
         var paintBrush = brush(
           bridge,
           addGlob,
-          baseSpace)
+          brushSpace)
+        positioned.moveTo(paintBrush, scale)
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
@@ -266,8 +275,9 @@ library.using([
 
         var zoom = zoomBy.withArgs(
           tracingImage.id,
-          critter.id,
-          setBrushResolution)
+          fox.id,
+          critter.getSetResolutionBinding(fox),
+          critter.getDrawBinding(fox))
 
         bridge.send([
           element(

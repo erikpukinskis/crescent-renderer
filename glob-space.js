@@ -138,13 +138,16 @@ module.exports = library.export(
     }
 
     GlobSpace.prototype.defineOn = function defineOn(bridge, name) {
+      if (this._binding) return this._binding
+
+      this._name = name
       if (this.parent) {
         var parent = this.parent.defineOn(
           bridge,
           "baseSpace")
       }
 
-      var spaceBinding = bridge.defineSingleton(
+      this._binding = bridge.defineSingleton(
         name,[
         lib.module("glob-space"),
         parent || null,
@@ -158,8 +161,14 @@ module.exports = library.export(
             space.height,
             space.resolution)})
 
-      return spaceBinding }
+      return this._binding }
 
+    GlobSpace.prototype.getBinding = function getBinding(bridge) {
+      if (!this._binding) {
+        throw new Error("Must call globSpace.defineOn before globSpace.getBinding")
+      }
+      return this._binding
+    }
 
     return GlobSpace
   }
