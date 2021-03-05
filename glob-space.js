@@ -6,17 +6,29 @@ module.exports = library.export(
   function(lib) {
 
     function GlobSpace(parent, rect, globSize, width, height, resolution) {
+      // If a child glob space's width, resolution, etc are undefined, it optionally can fall back to a parent's
       this.parent = parent
+
+      // The rect is a DOM element getBoundingRect object. It defines the offset of the space from the origin of the page. The left and top are used to understand where document coordinates are in the glob space. The width an height of the rect are not currently used.
       this.rect = rect
-      this.globSize = globSize
+
+      // With and height should always correspond to actual screen pixels.
       this.width = width
       this.height = height
+
+      // The resolution defines how many addressable pixels are in each screen pixel. So if resolution is 2 then you can fit 256 virtual pixels in a glob space with a width of 128
       this.resolution = resolution
+
+      // The glob size is the number of virtual pixels in each glob. It is not likely to last very long as a global property of the glob space, it seems like it's likely going to become a per-glob attribute. So you can have globs of different sizes in one space.
+      this.globSize = globSize
     }
 
     GlobSpace.prototype.setResolution = function setResolution(resolution) {
       this.resolution = resolution
-      console.log('space', this)
+    }
+
+    GlobSpace.prototype.setGlobSize = function setGlobSize(globSize) {
+      this.globSize = globSize
     }
 
     GlobSpace.prototype.getResolution = function getResolution() {
@@ -61,7 +73,7 @@ module.exports = library.export(
     GlobSpace.prototype.getCanvasRect =
       function(canvas) {
         var gl = canvas.getContext(
-          'experimental-webgl')
+          "experimental-webgl")
         this.rect = gl.canvas.getBoundingClientRect()}
 
     GlobSpace.prototype.getRectX =
@@ -168,6 +180,21 @@ module.exports = library.export(
         throw new Error("Must call globSpace.defineOn before globSpace.getBinding")
       }
       return this._binding
+    }
+
+    GlobSpace.prototype.mapFrom = function mapFrom(sourceSpace, sourceGlob) {
+
+      var pixelRatio = this.resolution / sourceSpace.resolution
+
+      var destinationGlob = {
+        color: sourceGlob.color,
+        x: sourceGlob.x * pixelRatio,
+        y: sourceGlob.y * pixelRatio,
+        nudgeX: sourceGlob.nudgeX * pixelRatio,
+        nudgeY: sourceGlob.nudgeY * pixelRatio,
+      }
+
+      return destinationGlob
     }
 
     return GlobSpace

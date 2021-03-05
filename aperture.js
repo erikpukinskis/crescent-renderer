@@ -230,8 +230,6 @@ library.using([
 
         var pickColor = brush.getPickColorBinding(paintBrush)
 
-        var setBrushResolution = brush.getSetResolutionBinding(paintBrush)
-
         if (color.length === 4) {
           bridge.domReady(
             pickColor.withArgs(

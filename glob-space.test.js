@@ -1,5 +1,6 @@
 var runTest = require("run-test")(require)
 
+
 function expectClosePoints(expect,a,b) {
   expect(a[0]).to.be.closeTo(b[0], 0.0001, "x coordinates do not match")
   expect(a[1]).to.be.closeTo(b[1], 0.0001, "y coordinates do not match")
@@ -78,7 +79,45 @@ runTest(
   })
 
 runTest(
-  "zooming")
+  "zooming",[
+  "./glob-space"],
+  function(expect, done, GlobSpace) {
+    var sourceSpace = new GlobSpace(
+      null,
+      null,
+      64,
+      256,
+      256,
+      1)
+
+    var destinationSpace = new GlobSpace(
+      null,
+      null,
+      64,
+      256,
+      256,
+      2)
+
+    var sourceGlob = {
+      color: {},
+      x: 1,
+      y: 1,
+      nudgeX: 0.1,
+      nudgeY: 0.2,
+      size: 64 }
+
+    var destinationGlob = destinationSpace.mapFrom(sourceSpace, sourceGlob)
+
+    expect(destinationGlob.x).to.equal(2)
+    expect(destinationGlob.y).to.equal(2)
+    expect(destinationGlob.nudgeX).to.equal(0.2)
+    expect(destinationGlob.nudgeY).to.equal(0.4)
+
+    expect(destinationGlob.color).not.to.be.undefined
+
+    // expect(destinationGlob.size).to.qual(128)
+    done()
+  })
 
 runTest(
   "offset")

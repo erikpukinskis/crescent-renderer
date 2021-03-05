@@ -10,7 +10,8 @@ module.exports = library.export(
       positioned,
       element.style({
         "position": "absolute",
-        "border": "none",
+        "border": "1px solid rgba(255,0,0,0.5)",
+        "box-sizing": "border-box",
         "background": "rgba(0,0,100,0.1)"}),
       function(bridge, addGlob, space) {
         this.assignId()
@@ -24,7 +25,7 @@ module.exports = library.export(
               down: false }})
 
         var scene = this.__scene = bridge.defineSingleton(
-          'scene',[
+          "scene",[
           bridgeModule(
             lib,
             "./shader",
@@ -48,7 +49,7 @@ module.exports = library.export(
           "width": space.getWidth()+"px",
           "height": space.getHeight()+"px",
           "onmousedown": bridge.remember(
-              "warrens/brushDown").
+              "brush/brushDown").
               withArgs(
                 scene,
                 spaceBinding,
@@ -57,16 +58,17 @@ module.exports = library.export(
                 bridge.event).
               evalable(),
           "onmouseup": bridge.remember(
-            "warrens/brushUp").
+            "brush/brushUp").
               withArgs(
                 addGlob,
                 scene,
                 color,
                 glob,
+                spaceBinding,
                 bridge.event).
             evalable(),
           "onmousemove": bridge.remember(
-            "warrens/brushMove").
+            "brush/brushMove").
               withArgs(
                 scene,
                 spaceBinding,
@@ -75,7 +77,7 @@ module.exports = library.export(
                 bridge.event).
               evalable(),
           "onmouseout": bridge.remember(
-            "warrens/brushHide").
+            "brush/brushHide").
               withArgs(
                 scene).
               evalable()})
@@ -95,7 +97,7 @@ module.exports = library.export(
 
     function defineOn(bridge) {
       if (bridge.remember(
-        "warrens/brushDown")) {
+        "brush/brushDown")) {
         return }
 
       bridge.addToHead(
@@ -103,7 +105,7 @@ module.exports = library.export(
           brush))
 
       bridge.see(
-        "warrens/brushDown",
+        "brush/brushDown",
         bridge.defineFunction(
           function brushDown(scene, space, glob, color, event) {
             var x = space.getRectX(event)
@@ -116,9 +118,9 @@ module.exports = library.export(
             glob.startRectY = y }))
 
       bridge.see(
-        "warrens/brushUp",
+        "brush/brushUp",
         bridge.defineFunction(
-          function brushUp(addGlob, scene, color, glob, event) {
+          function brushUp(addGlob, scene, color, glob, space, event) {
             glob.down = false
             scene.bufferPoints(
               [])
@@ -127,13 +129,13 @@ module.exports = library.export(
               y: glob.y,
               nudgeX: glob.nudgeX,
               nudgeY: glob.nudgeY,
-              color: color.get()
-            }
+              color: color.get(),
+              space: space }
             addGlob(
               copy)}))
 
       bridge.see(
-        "warrens/brushMove",
+        "brush/brushMove",
         bridge.defineFunction(
           function brushMove(scene, space, glob, color, event) {
 
@@ -165,7 +167,7 @@ module.exports = library.export(
             scene.draw()}))
 
       bridge.see(
-        "warrens/brushHide",
+        "brush/brushHide",
         bridge.defineFunction(
           function brushHide(scene) {
             scene.bufferPoints(
@@ -176,12 +178,7 @@ module.exports = library.export(
     brush.getPickColorBinding =
       function getPickColorBinding(brushElement) {
         return brushElement.__color.methodCall(
-          'set')}
-
-    brush.getSetResolutionBinding =
-      function getSetResolutionBinding(brushElement) {
-        return brushElement.__space.methodCall(
-          'setResolution')}
+          "set")}
 
     brush.defineOn = defineOn
 

@@ -10,7 +10,8 @@ module.exports = library.export(
       positioned,
       element.style({
         "background": "rgba(100,0,0,0.1)",
-        "border": "none"}),
+        "border": "4px solid rgba(0,255,80,0.3)",
+        "box-sizing": "border-box"}),
       function(bridge, space) {
 
         this.assignId()
@@ -23,7 +24,7 @@ module.exports = library.export(
         var spaceBinding = this.__space = space.defineOn(bridge, "critterSpace")
 
         var scene = bridge.defineSingleton(
-          'scene',[
+          "scene",[
           bridgeModule(
             lib,
             "./shader",
@@ -51,8 +52,11 @@ module.exports = library.export(
             spaceBinding,
             scene)
 
-        this.__setResolutionBinding = spaceBinding.methodCall(
-          "setResolution")
+        this.__setResolutionBinding = bridge.defineFunction([
+            spaceBinding],
+            function(space, resolution) {
+              space.setResolution(resolution)
+            })
 
         bridge.domReady([
           this.id,
@@ -91,12 +95,14 @@ module.exports = library.export(
         bridge.defineFunction([
           draw],
           function critterAddGlob(draw, globs, space, scene, glob) {
-          globs.push(
-            glob)
-          draw(
-            globs,
-            space,
-            scene)}))}
+            var copy = space.mapFrom(glob.space, glob)
+            globs.push(
+              copy)
+
+            draw(
+              globs,
+              space,
+              scene)}))}
 
     critter.getAddGlobBinding =
       function getAddGlobBinding(critterElement) {

@@ -49,7 +49,7 @@ module.exports = library.export(
           6*4, // The stride between the start of each chunk, in floats (where each float is 4)
           0) // The position of the first chunk (also in floats)
 
-        console.log('coordinates is attribute', this.coordinatesLocation)
+        console.log("coordinates are at WebGL location", this.coordinatesLocation)
 
         // This I guess just turns that attribute on
         gl.enableVertexAttribArray(
@@ -77,7 +77,7 @@ module.exports = library.export(
           this.brushColorLocation)
 
         console.log(
-          "color is attribute",
+          "color is at WebGL location",
           this.brushColorLocation)
 
         // This is where the draw begins
