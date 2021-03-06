@@ -1,6 +1,7 @@
 var runTest = require("run-test")(require)
 
 
+
 function expectClosePoints(expect,a,b) {
   expect(a[0]).to.be.closeTo(b[0], 0.0001, "x coordinates do not match")
   expect(a[1]).to.be.closeTo(b[1], 0.0001, "y coordinates do not match")
@@ -89,6 +90,7 @@ runTest(
 
     done()
   })
+
 
 runTest(
   "offset")
