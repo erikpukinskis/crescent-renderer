@@ -127,8 +127,8 @@ library.using([
         zoomLevel += zoomIncrement
         var scale = getZoomScale(zoomLevel)
 
-        // [ ] tracing image width & height ×2
-        // [ ] resolution on critter ×2
+        // [x] tracing image width & height ×2
+        // [x] resolution on critter ×2
         // [ ] critter canvas width & height ×2
 
         var tracingImage = document.getElementById(
@@ -179,8 +179,6 @@ library.using([
 
         var foxSpace = new GlobSpace(
           undefined,
-          undefined,
-          GLOB_SIZE,
           apertureWidthInPixels,
           apertureHeightInPixels,
           1/scale)
@@ -216,8 +214,6 @@ library.using([
 
         var brushSpace = new GlobSpace(
           undefined,
-          undefined,
-          GLOB_SIZE,
           apertureWidthInPixels,
           apertureHeightInPixels,
           1/scale)

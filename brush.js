@@ -111,9 +111,10 @@ module.exports = library.export(
             var x = space.getRectX(event)
             var y = space.getRectY(event)
 
+            var brushSize = 64
             glob.down = true
-            glob.x = space.getGlobX(event)
-            glob.y = space.getGlobY(event)
+            glob.x = space.getGlobX(event, brushSize)
+            glob.y = space.getGlobY(event, brushSize)
             glob.startRectX = x
             glob.startRectY = y }))
 
@@ -124,12 +125,14 @@ module.exports = library.export(
             glob.down = false
             scene.bufferPoints(
               [])
+            var brushSize = 64
             var copy = {
               x: glob.x,
               y: glob.y,
               nudgeX: glob.nudgeX,
               nudgeY: glob.nudgeY,
               color: color.get(),
+              size: brushSize,
               space: space }
             addGlob(
               copy)}))
@@ -141,27 +144,32 @@ module.exports = library.export(
 
             if (!color.get()) return
 
+              var brushSize = 64
+
             if (glob.down) {
               var x = space.getRectX(event)
               var y = space.getRectY(event)
 
               var dx = x - glob.startRectX
               var dy = y - glob.startRectY
-              glob.nudgeX = dx/space.getGlobSize()
-              glob.nudgeY = dy/space.getGlobSize()
+              glob.nudgeX = dx/brushSize
+              glob.nudgeY = dy/brushSize
 
               var globX = glob.x + glob.nudgeX
               var globY = glob.y + glob.nudgeY
 
             } else {
-              var globX = space.getGlobX(event)
-              var globY = space.getGlobY(event)
+              var globX = space.getGlobX(event, brushSize)
+              var globY = space.getGlobY(event, brushSize)
             }
+
+            var brushSize = 64
 
             var points = space.getPixel(
               globX,
               globY,
-              color.get())
+              color.get(),
+              brushSize)
 
             scene.bufferPoints(points)
             scene.draw()}))

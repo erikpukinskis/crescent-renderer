@@ -20,14 +20,8 @@ runTest(
     // So let's test that...
 
     var space = new GlobSpace(
-      // no parent yet
-      undefined,
-
       // getting canvas coordinates is independent of the canvas origin, we just use that for the getGlobX/getGlobY functions that handle a mouse event. So we can just use undefined for the rect
       undefined,
-
-      // glob size
-      5,
 
       // canvas width, in screen pixels
       5*6,
@@ -38,19 +32,21 @@ runTest(
       // resolution
       1)
 
+    const globSize = 5
+
     expectClosePoints(
       expect,
-      space.globPointToCanvas([0,0]),
+      space.globPointToCanvas([0,0], globSize),
       [-2/3,1/2])
 
     expectClosePoints(
       expect,
-      space.globPointToCanvas([2,1]),
+      space.globPointToCanvas([2,1], globSize),
       [0,0])
 
     expectClosePoints(
       expect,
-      space.globPointToCanvas([3,2]),
+      space.globPointToCanvas([3,2], globSize),
       [1/3,-1/2])
 
     done()
@@ -58,42 +54,17 @@ runTest(
 )
 
 runTest(
-  "inherit glob size, width, height, etc, from the parent",
-  ["./glob-space"],
-  function(expect, done, GlobSpace) {
-    var base = new GlobSpace(
-      undefined,
-      undefined,
-      5,
-      20,
-      30,
-      1)
-
-    var space = new GlobSpace(base)
-
-    expect(space.getGlobSize()).to.equal(5)
-    expect(space.getWidth()).to.equal(20)
-    expect(space.getHeight()).to.equal(30)
-
-    done()
-  })
-
-runTest(
   "zooming",[
   "./glob-space"],
   function(expect, done, GlobSpace) {
     var sourceSpace = new GlobSpace(
       null,
-      null,
-      64,
       256,
       256,
       1)
 
     var destinationSpace = new GlobSpace(
       null,
-      null,
-      64,
       256,
       256,
       2)
@@ -108,14 +79,14 @@ runTest(
 
     var destinationGlob = destinationSpace.mapFrom(sourceSpace, sourceGlob)
 
-    expect(destinationGlob.x).to.equal(2)
-    expect(destinationGlob.y).to.equal(2)
-    expect(destinationGlob.nudgeX).to.equal(0.2)
-    expect(destinationGlob.nudgeY).to.equal(0.4)
+    expect(destinationGlob.x).to.equal(1)
+    expect(destinationGlob.y).to.equal(1)
+    expect(destinationGlob.nudgeX).to.equal(0.1)
+    expect(destinationGlob.nudgeY).to.equal(0.2)
 
     expect(destinationGlob.color).not.to.be.undefined
+    expect(destinationGlob.size).to.equal(128)
 
-    // expect(destinationGlob.size).to.qual(128)
     done()
   })
 
