@@ -13,8 +13,9 @@ library.using([
   "basic-styles",
   "./brush",
   "./critter",
-  "./positioned"],
-  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, GlobSpace, basicStyles, brush, critter, positioned) {
+  "./positioned",
+  "./float-color"],
+  function(lib, BrowserBridge, WebSite, element, bridgeModule, _, GlobSpace, basicStyles, brush, critter, positioned, floatColor) {
 
     var baseBridge = new BrowserBridge()
     basicStyles.addTo(baseBridge)
@@ -38,19 +39,9 @@ library.using([
         "opacity": "0.6",
       }),
       function(pickColor, r,g,b) {
-        var color = new Float32Array([
-          r/256,
-          g/256,
-          b/256,
-          0.4])
-        var rgba = colorToRgba(color)
-        function colorToRgba(color) {
-          return color.map(
-            function(component) {
-              return Math.floor(
-                component*256)})
-                .join(
-                  ",")}
+        var color = floatColor(r,g,b,0.4)
+        var rgba = floatColor.toRgba(color)
+
         this.appendStyles({
           "background": "rgba("
             +rgba+")"})
@@ -127,6 +118,8 @@ library.using([
         zoomLevel += zoomIncrement
         var scale = getZoomScale(zoomLevel)
 
+        // Todo
+
         // [x] tracing image width & height ×2
         // [x] resolution on critter ×2
         // [ ] critter canvas width & height ×2
@@ -166,9 +159,7 @@ library.using([
       function(request, response) {
         var scale = getZoomScale(
           request.query.zoom)
-        var color = new Float32Array(
-          request.query.color.
-            split("**"))
+        var color = floatColor.fromQuery(request.query.color)
         var bridge = baseBridge.forResponse(
           response)
 
