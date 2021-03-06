@@ -17,6 +17,14 @@ module.exports = library.export(
       this.resolution = resolution
     }
 
+    GlobSpace.prototype.setWidth = function setResolution(width) {
+      this.width = width
+    }
+
+    GlobSpace.prototype.setHeight = function setResolution(height) {
+      this.height = height
+    }
+
     GlobSpace.prototype.setResolution = function setResolution(resolution) {
       this.resolution = resolution
     }

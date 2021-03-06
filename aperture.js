@@ -122,7 +122,7 @@ library.using([
       baseBridge.defineFunction(getZoomScale),
       apertureWidthInPixels,
       apertureHeightInPixels],
-      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, tracingImageId, critterId, setCritterResolution, drawCritter, zoomIncrement) {
+      function zoomBy(getQueryParam, setQueryParam, getZoomScale, apertureWidthInPixels, apertureHeightInPixels, tracingImageId, critterId, setCritterScale, drawCritter, zoomIncrement) {
         var zoomLevel = getQueryParam("zoom", parseInt) || 0
         zoomLevel += zoomIncrement
         var scale = getZoomScale(zoomLevel)
@@ -130,6 +130,9 @@ library.using([
         // [x] tracing image width & height ×2
         // [x] resolution on critter ×2
         // [ ] critter canvas width & height ×2
+        // [ ] move brush
+        // [ ] resize critter
+        // [ ] fix color in query param
 
         var tracingImage = document.getElementById(
             tracingImageId)
@@ -138,12 +141,7 @@ library.using([
 
         // OK, so critter space needs to change resolution, and... double width?
 
-        // var critter = document.getElementById(
-        //     critterId)
-        // critter.width = apertureWidthInPixels/scale
-        // critter.height = apertureHeightInPixels/scale
-
-        setCritterResolution(1/scale)
+        setCritterScale(scale)
 
         drawCritter()
 
@@ -270,7 +268,7 @@ library.using([
         var zoom = zoomBy.withArgs(
           tracingImage.id,
           fox.id,
-          critter.getSetResolutionBinding(fox),
+          critter.getSetScaleBinding(fox),
           critter.getDrawBinding(fox))
 
         bridge.send([

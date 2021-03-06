@@ -52,10 +52,27 @@ module.exports = library.export(
             spaceBinding,
             scene)
 
-        this.__setResolutionBinding = bridge.defineFunction([
-            spaceBinding],
-            function(space, resolution) {
-              space.setResolution(resolution)
+        this.__setScaleBinding = bridge.defineFunction([
+            spaceBinding,
+            this.id],
+            function(space, elementId, scale) {
+              console.log('setting scale to', scale)
+
+              // width of both the canvas and the space starts of at 512
+
+              // When I zoom out, the canvas width should become 256 and the res should be 2x
+
+              var element = document.getElementById(
+                elementId)
+              element.width = space.width * scale
+              console.log('setting width to', space.width * scale)
+              console.log('height is', space.height)
+              // element.height = 360
+              element.height = space.height *scale
+
+              space.setResolution(1/scale)
+              space.setWidth(space.width * scale)
+              space.setHeight(space.height * scale)
             })
 
         bridge.domReady([
@@ -108,12 +125,11 @@ module.exports = library.export(
       function getAddGlobBinding(critterElement) {
         return critterElement.__addGlobBinding }
 
-    critter.getDrawBinding =
-      function getDrawBinding(critterElement) {
+    critter.getDrawBinding = function getDrawBinding(critterElement) {
         return critterElement.__drawBinding }
 
-    critter.getSetResolutionBinding =       function getSetResolutionBinding(critterElement) {
-        return critterElement.__setResolutionBinding }
+    critter.getSetScaleBinding = function getSetScaleBinding(critterElement) {
+        return critterElement.__setScaleBinding }
 
 
     critter.defineOn = defineOn
