@@ -122,7 +122,7 @@ library.using([
 
         // [x] tracing image width & height ×2
         // [x] resolution on critter ×2
-        // [ ] critter canvas width & height ×2
+        // [ ] fix critter rendering at 2x
         // [ ] move brush
         // [ ] resize critter
         // [ ] fix color in query param

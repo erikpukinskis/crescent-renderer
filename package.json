@@ -4,7 +4,7 @@
     "basic-styles": "*",
     "bridge-module": "*",
     "browser-bridge": "^0.194.0",
-    "function-call": "^0.39.0",
+    "function-call": "^0.43.0",
     "module-library": "*",
     "web-element": "^1.3.0",
     "web-site": "*",
