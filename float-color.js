@@ -8,7 +8,7 @@ module.exports = library.export(
         r/256,
         g/256,
         b/256,
-        0.4])}
+        a])}
 
     floatColor.toRgbaString = function floatColorToRgba(color) {
       return color.map(

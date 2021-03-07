@@ -40,7 +40,7 @@ library.using([
       }),
       function(pickColor, r,g,b) {
         var color = floatColor(r,g,b,0.4)
-        var rgba = floatColor.toRgba(color)
+        var rgba = floatColor.toRgbaString(color)
 
         this.appendStyles({
           "background": "rgba("
