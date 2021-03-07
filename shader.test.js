@@ -1,15 +1,18 @@
 var runTest = require("run-test")(require)
 
+
 runTest(
-  "drawing globs in high resolution space",[
+  "drawing globs",[
   runTest.library.ref(),
   "./glob-space",
   "./float-color",
   "browser-task",
   "web-site",
   "browser-bridge",
-  "web-element"],
-  function(expect, done, lib, GlobSpace, floatColor, browserTask, WebSite, BrowserBridge, element) {
+  "web-element",
+  "png.js",
+  "fs"],
+  function(expect, done, lib, GlobSpace, floatColor, browserTask, WebSite, BrowserBridge, element, PNGReader, fs) {
 
     var glob = {
       "color": floatColor(
@@ -25,9 +28,9 @@ runTest(
 
     var space = new GlobSpace(
       null,
-      256*2,
-      192*2,
-      2/2 )
+      512,
+      384,
+      1 )
 
     var site = new WebSite()
     var bridge = new BrowserBridge()
@@ -81,6 +84,47 @@ runTest(
     var browser = browserTask(
       "http://localhost:7721",
       function() {
+        browser.eval(
+          function(canvasId, callback) {
+            var canvas = document.getElementById(canvasId)
+            callback(canvas.toDataURL())
+          },
+          [canvas.id],
+          compare)})
+
+    function compare(dataURL) {
+      var buffer = Buffer.from(dataURL.split(",")[1], 'base64')
+      var reader = new PNGReader(buffer)
+      reader.parse(function(err, png){
+        if (err) throw err;
+        saveSnapshot(dataURL)
         browser.done()
-        done()})
+        site.stop()
+        done()
+      })
+    }
+
+    function saveSnapshot(dataURL) {
+      var buffer = Buffer.from(dataURL.split(",")[1], 'base64')
+      fs.writeFileSync('snapshots/zoomed-out.png', buffer)
+    }
   })
+
+
+runTest("drawing globs in high resolution space")
+
+  //   var space = new GlobSpace(
+  //     null,
+  //     256,
+  //     192,
+  //     2 )
+
+  //   var site = new WebSite()
+  //   var bridge = new BrowserBridge()
+
+  //   var canvas = element(
+  //     "canvas",{
+  //     "width": "256px",
+  //     "height": "192px"},
+  // }
+

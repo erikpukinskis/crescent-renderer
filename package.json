@@ -8,7 +8,8 @@
     "module-library": "*",
     "web-element": "^1.3.0",
     "web-site": "*",
-    "browser-task": "*"
+    "browser-task": "^0.54.0",
+    "png.js": "*"
   },
   "devDependencies": {
     "run-test": "*"
