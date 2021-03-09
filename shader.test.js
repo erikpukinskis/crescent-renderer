@@ -57,8 +57,10 @@ runTest(
       glob,
       space.defineOn(
         bridge,
-        "testSpace")],
-      function(canvasId, scene, glob, space) {
+        "testSpace"),
+      lib.module("global-wait")],
+      function(canvasId, scene, glob, space, wait) {
+        var ticket = wait.start("draw")
         var canvas = document.getElementById(
           canvasId)
         scene.init(
@@ -69,7 +71,9 @@ runTest(
 
         scene.bufferPoints(points)
 
-        scene.draw()})
+        scene.draw()
+        wait.finish(
+          ticket)})
 
     bridge.domReady(draw)
 
@@ -94,9 +98,10 @@ runTest(
 
     var actualDataURL
     var expectedDataURL
+
     function parseActual(dataURL) {
       actualDataURL = dataURL
-      var name = "zoomed-out"
+      var name = "zoomed-out.png"
       var data = dataURL.split(",")[1]
       var buffer = Buffer.from(
         data,
@@ -106,9 +111,15 @@ runTest(
         function(err, actualPng){
           if (err) throw err
           fs.readFile(
-            "snapshots/"+name+".png",
+            "snapshots/"+name,
             function(err, expectedBuffer) {
-              if (err) throw err
+              if (err && err.code === "ENOENT") {
+                saveSnapshot(dataURL)
+                finishUp()
+              }
+              if (err) {
+                throw err
+              }
               var expectedReader = new PNGReader(
                 expectedBuffer)
               expectedDataURL = "data:image/png;base64,"+expectedBuffer.toString('base64')
@@ -132,16 +143,13 @@ runTest(
       if (actualSize !== expectedSize || mismatches.length > 0) {
         dumpImageDiff(name, actualDataURL, expectedDataURL, mismatches)}
 
-      var diffInstructions = "open snapshots/"+name+".diff.html to see the difference"
+      var diffInstructions = "open snapshots/"+name+".diff.html to see the difference. Or delete snapshots/"+name+" to generate a new snapshot"
 
       expect(actualSize, diffInstructions).to.equal(expectedSize)
 
       expect(mismatches).to.have.lengthOf(0, diffInstructions)
 
-      // saveSnapshot(dataURL)
-      browser.done()
-      site.stop()
-      done()}
+      finishUp()}
 
     function findMismatchedPixels(actualPng, expectedPng) {
       var width = actualPng.getWidth()
@@ -224,6 +232,12 @@ runTest(
     function saveSnapshot(dataURL) {
       var buffer = Buffer.from(dataURL.split(",")[1], 'base64')
       fs.writeFileSync('snapshots/zoomed-out.png', buffer)
+    }
+
+    function finishUp() {
+      browser.done()
+      site.stop()
+      done()
     }
   })
 
