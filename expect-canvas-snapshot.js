@@ -11,7 +11,7 @@ module.exports = library.export(
 
     function expectCanvasSnapshot(url, canvasId, name, callback) {
       var browser = browserTask(
-        "http://localhost:7721",
+        url,
         function() {
           browser.eval(
             function(canvasId, callback) {
@@ -121,10 +121,16 @@ module.exports = library.export(
           "margin-top": "3em",
           " h2": {
             "line-height": "1em",
+            "width": "0",
+            "overflow": "visible",
+            "white-space": "nowrap",
             "margin": "-2em 0 1em 0",
           },
           " .instruction": {
             "line-height": "1em",
+            "width": "0",
+            "overflow": "visible",
+            "white-space": "nowrap",
             "margin": "1em 0 -2em 0",
           },
           " .actual": {
