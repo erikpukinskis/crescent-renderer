@@ -16,6 +16,7 @@ module.exports = library.export(
     ShaderScene.prototype.init = function(canvas) {
         var gl = this.gl = canvas.getContext(
           "experimental-webgl",{
+          preserveDrawingBuffer: true,
           antialias: false})
 
         // The shader program combines them together

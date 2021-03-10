@@ -57,10 +57,8 @@ runTest(
       glob,
       space.defineOn(
         bridge,
-        "testSpace"),
-      lib.module("global-wait")],
-      function(canvasId, scene, glob, space, wait) {
-        var ticket = wait.start("draw")
+        "testSpace")],
+      function(canvasId, scene, glob, space) {
         var canvas = document.getElementById(
           canvasId)
         scene.init(
@@ -70,10 +68,8 @@ runTest(
         var points = space.getAllPixels([glob])
 
         scene.bufferPoints(points)
-
         scene.draw()
-        wait.finish(
-          ticket)})
+      })
 
     bridge.domReady(draw)
 
@@ -91,15 +87,16 @@ runTest(
         browser.eval(
           function(canvasId, callback) {
             var canvas = document.getElementById(canvasId)
-            callback(canvas.toDataURL())
+            var data = canvas.toDataURL()
+            callback(data)
           },
           [canvas.id],
-          parseActual)})
+          parseSnapshot)})
 
     var actualDataURL
     var expectedDataURL
 
-    function parseActual(dataURL) {
+    function parseSnapshot(dataURL) {
       actualDataURL = dataURL
       var name = "zoomed-out.png"
       var data = dataURL.split(",")[1]
@@ -218,7 +215,7 @@ runTest(
               element("h2", "What we expected \""+name+"\" to look like:"),
               element("img",{
                 "src": expectedDataURL}),
-              element(".instruction", "(hover to see what it actually looks like)")),
+              element(".instruction", "(move cursor out of canvas to see what it actually looks like)")),
             element(".actual",
               element("h2", "What \""+name+"\" actually looks like:"),
               element("img",{
