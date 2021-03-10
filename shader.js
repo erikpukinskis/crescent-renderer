@@ -16,6 +16,7 @@ module.exports = library.export(
     ShaderScene.prototype.init = function(canvas) {
         var gl = this.gl = canvas.getContext(
           "experimental-webgl",{
+          // The buffer must be preserved for snapshot tests to be able to come in after drawing and dump an image from the canvas
           preserveDrawingBuffer: true,
           antialias: false})
 

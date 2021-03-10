@@ -10,9 +10,8 @@ runTest(
   "web-site",
   "browser-bridge",
   "web-element",
-  "png.js",
-  "fs"],
-  function(expect, done, lib, GlobSpace, floatColor, browserTask, WebSite, BrowserBridge, element, PNGReader, fs) {
+  "./expect-canvas-snapshot"],
+  function(expect, done, lib, GlobSpace, floatColor, browserTask, WebSite, BrowserBridge, element, expectCanvasSnapshot) {
 
     var glob = {
       "color": floatColor(
@@ -79,163 +78,13 @@ runTest(
 
     site.start(7721)
 
-    done.failAfter(1000*60*5)
-
-    var browser = browserTask(
+    expectCanvasSnapshot(
       "http://localhost:7721",
+      canvas.id,
+      "zoomed-out.png",
       function() {
-        browser.eval(
-          function(canvasId, callback) {
-            var canvas = document.getElementById(canvasId)
-            var data = canvas.toDataURL()
-            callback(data)
-          },
-          [canvas.id],
-          parseSnapshot)})
-
-    var actualDataURL
-    var expectedDataURL
-
-    function parseSnapshot(dataURL) {
-      actualDataURL = dataURL
-      var name = "zoomed-out.png"
-      var data = dataURL.split(",")[1]
-      var buffer = Buffer.from(
-        data,
-        "base64")
-      var actualReader = new PNGReader(buffer)
-      actualReader.parse(
-        function(err, actualPng){
-          if (err) throw err
-          fs.readFile(
-            "snapshots/"+name,
-            function(err, expectedBuffer) {
-              if (err && err.code === "ENOENT") {
-                saveSnapshot(dataURL)
-                finishUp()
-              }
-              if (err) {
-                throw err
-              }
-              var expectedReader = new PNGReader(
-                expectedBuffer)
-              expectedDataURL = "data:image/png;base64,"+expectedBuffer.toString('base64')
-              var compareToActual = compare.bind(
-                null,
-                name,
-                actualPng)
-              expectedReader.parse(
-                compareToActual)})})}
-
-    function compare(name, actualPng, err, expectedPng){
-      if (err) throw err
-
-      var actualSize = actualPng.getWidth() + '×' + actualPng.getHeight()
-      var expectedSize = expectedPng.getWidth() + '×' + expectedPng.getHeight()
-
-      var mismatches = findMismatchedPixels(
-        actualPng,
-        expectedPng)
-
-      if (actualSize !== expectedSize || mismatches.length > 0) {
-        dumpImageDiff(name, actualDataURL, expectedDataURL, mismatches)}
-
-      var diffInstructions = "open snapshots/"+name+".diff.html to see the difference. Or delete snapshots/"+name+" to generate a new snapshot"
-
-      expect(actualSize, diffInstructions).to.equal(expectedSize)
-
-      expect(mismatches).to.have.lengthOf(0, diffInstructions)
-
-      finishUp()}
-
-    function findMismatchedPixels(actualPng, expectedPng) {
-      var width = actualPng.getWidth()
-      var height = actualPng.getHeight()
-      var mismatches = []
-
-      for(x=0; x<width; x++) {
-        for(y=0; y<height; y++) {
-          if (pixelsMatch(
-            actualPng.getPixel(
-              x,
-              y),
-            expectedPng.getPixel(
-              x,
-              y))) {
-            continue }
-
-          mismatches.push([x,y])}}
-
-      return mismatches}
-
-    function pixelsMatch(a, b) {
-      for(i=0; i<4; i++) {
-        if (a[i] === b[i]) {
-          continue}
-        return false}
-      return true}
-
-    function dumpImageDiff(name, actualDataURL, expectedDataURL, mismatches) {
-
-      var hover = element.template.container(
-        ".hover",
-        element.style({
-          "display": "inline-block",
-          "margin-top": "3em",
-          " h2": {
-            "line-height": "1em",
-            "margin": "-2em 0 1em 0",
-          },
-          " .instruction": {
-            "line-height": "1em",
-            "margin": "1em 0 -2em 0",
-          },
-          " .actual": {
-            "display": "inline-block",
-            "border": "1px solid gray"
-          },
-          " .expected": {
-            "display": "none",
-            "border": "1px solid gray"
-          },
-          ":hover .actual": {
-            "display": "none"
-          },
-          ":hover .expected": {
-            "display": "inline-block",
-          }
-        }))
-
-      var page = element("html",
-        element("head",
-          element.stylesheet(hover)),
-        element("body",
-          hover(
-            element(".expected",
-              element("h2", "What we expected \""+name+"\" to look like:"),
-              element("img",{
-                "src": expectedDataURL}),
-              element(".instruction", "(move cursor out of canvas to see what it actually looks like)")),
-            element(".actual",
-              element("h2", "What \""+name+"\" actually looks like:"),
-              element("img",{
-                "src": actualDataURL}),
-              element(".instruction", "(hover to see what we expected it to look like)")))))
-
-      fs.writeFileSync(
-        "snapshots/"+name+".diff.html",
-        page.html())}
-
-    function saveSnapshot(dataURL) {
-      var buffer = Buffer.from(dataURL.split(",")[1], 'base64')
-      fs.writeFileSync('snapshots/zoomed-out.png', buffer)
-    }
-
-    function finishUp() {
-      browser.done()
-      site.stop()
-      done()
-    }
+        site.stop()
+        done()})
   })
 
 
