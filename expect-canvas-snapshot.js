@@ -43,7 +43,7 @@ module.exports = library.export(
           if (err) throw err
           var path = "snapshots/"+name
           if (!fs.existsSync(path)) {
-            saveSnapshot(dataURL, path)
+            saveSnapshot(dataURL, name)
             callback()
             return}
           fs.readFile(
@@ -82,6 +82,7 @@ module.exports = library.export(
 
       chai.expect(mismatches).to.have.lengthOf(0, diffInstructions)
 
+      deleteDiff(name)
       callback()}
 
     function findMismatchedPixels(actualPng, expectedPng) {
@@ -162,7 +163,8 @@ module.exports = library.export(
         "snapshots/"+name+".diff.html",
         page.html())}
 
-    function saveSnapshot(dataURL, path) {
+    function saveSnapshot(dataURL, name) {
+      var path = "snapshots/"+name
       var buffer = Buffer.from(
         dataURL.split(",")[1],
         "base64")
@@ -170,7 +172,15 @@ module.exports = library.export(
         path,
         buffer)
       console.log(
-        "📸  Saved new snapshot to "+path)}
+        "📸  Saved new snapshot to "+path)
+      deleteDiff(name)}
+
+    function deleteDiff(name) {
+      var diffPath = "snapshots/"+name+".diff.html"
+      if (fs.existsSync(
+        diffPath)) {
+        fs.unlinkSync(
+          diffPath)}}
 
     return expectCanvasSnapshot
   }
